@@ -1,0 +1,29 @@
+﻿<ivy-module version="2.0" xmlns:e="http://ant.apache.org/ivy/extra">
+	<info module="MyidCredentialProvider" organisation="myid.utilities" e:svnurl="${svnURL}" e:svnrev="${svnRevision}" />
+
+	<configurations defaultconfmapping="*!dev,!test->@">
+		<conf name="x32"/>
+		<conf name="x64"/>
+		<conf name="dev" visibility="private" />
+		<conf name="test" visibility="private" />
+	</configurations>
+
+	<publications>
+	</publications>
+
+	<dependencies>
+		<dependency org="tools.build" name="Platform" rev="2.+" conf="dev" />
+		<dependency org="3rdparty" name="CATCH" rev="latest.[integration]" conf="x32,x64->source,windows" />
+		<dependency org="3rdparty" name="gmock" rev="1.7.0.0" conf="x32,x64->vc10,include,vc15" />
+
+		<!-- 3rd Party dependencies -->
+		<dependency org="3rdparty" name="MSXML" rev="6.0+" conf="x32,x64->win32,source" />
+		<dependency org="3rdparty" name="Boost" rev="1.66.0+"  conf="x32,x64->vc10,include,vc15" />
+		<dependency org="3rdparty" name="OpenSSL" rev="1.0.2h+" conf="x32,x64->win32,win64,source" />
+		<dependency org="3rdparty" name="pkcs" rev="2.40+" conf="x32,x64->include" />
+
+		<!-- myid dependencies  -->
+		<dependency org="myid.platform" name="SharedHeaderFiles" rev="1.+" conf="x32,x64->source" />
+		<!--<dependency org="myid.utilities" name="eTypeLib" rev="200.+" conf="x32,x64->vc10,include,vc15" />-->
+	</dependencies>
+</ivy-module>

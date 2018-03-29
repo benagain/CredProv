@@ -1,0 +1,51 @@
+﻿<project name="MyidCredentialProvider" default="test">
+	<get src="http://webtools.intercede.com/Ivy/latest/bootstrap.xml" dest=".bootstrap.xml" skipexisting="true" quiet="true"/>
+	<import file=".bootstrap.xml" />
+	<import file="${dependency.dir}/scripts/Tools.Build.Platform/build_platform.xml" />
+
+	<property name="module.sln" value="EdeficeCommon\EdeficeCommon" />
+
+	<macrodef name="moduleZipPlatform">
+		<attribute name="platform" />
+		<attribute name="dirPattern" />
+		<attribute name="compDir" />
+		<attribute name="zipSuffix" />
+		<attribute name="excludes" default="" />
+		<sequential>
+			<!--<zip destfile="${ivy.zip.dir}/${moduleName}_@{platform}_@{zipSuffix}.zip" whenempty="${zip.whenempty}">
+				<zipfileset
+						dir="${base.dir}/EdeficeCommon"
+						includes="@{compDir}/@{dirPattern}/*.lib @{compDir}/@{dirPattern}/*.pdb"
+						excludes="@{excludes}" />
+				<zipfileset
+						dir="${base.dir}/ASN1"
+						includes="@{compDir}/@{dirPattern}/*.lib @{compDir}/@{dirPattern}/*.pdb"
+						excludes="@{excludes}" />
+				<zipfileset
+						dir="${base.dir}/Exceptions"
+						includes="@{compDir}/@{dirPattern}/*.lib @{compDir}/@{dirPattern}/*.pdb"
+						excludes="@{excludes}" />
+				<zipfileset
+						dir="${base.dir}/Conversions"
+						includes="@{compDir}/@{dirPattern}/*.lib @{compDir}/@{dirPattern}/*.pdb"
+						excludes="@{excludes}" />
+				<zipfileset
+						dir="${base.dir}/String"
+						includes="@{compdir}/@{dirPattern}/*.lib @{compDir}/@{dirPattern}/*.pdb"
+						excludes="@{excludes}" />
+			</zip>-->
+		</sequential>
+	</macrodef>
+
+	<target name="Jenkins" depends="JenkinsLib" />
+
+	<target name="moduleZip">
+		<antcall target="PlatformCommon.moduleZip">
+			<param name="zipPrefix" value="Utilities\EdeficeCommon" />
+			<param name="zipAdditionalIncludes" value="*EntryPoints.cpp UtilitiesTests/TestMain.cpp UtilitiesTests/MockMain.cpp SiteSafety.cpp OID.rc OID.csv" />
+		</antcall>
+	</target>
+
+	<target name="clean-module" depends="clean-module32, clean-module64, clean-module32.UMD, clean-module64.UMD, clean_deps" />
+
+</project>
