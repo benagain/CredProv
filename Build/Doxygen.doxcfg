@@ -1,0 +1,5 @@
+@INCLUDE_PATH = ../../SharedHeaderFiles/Doxygen
+@INCLUDE = Common.doxcfg
+
+PROJECT_NAME = "Virtual Smart Card"
+@INCLUDE = VirtualSmartCard.doxcfg

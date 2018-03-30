@@ -1,6 +1,6 @@
 #include "stdafx.h"
 #include "Debug.h"
-#include "Msg\EventLog.h"
+//#include "Msg\EventLog.h"
 #include "Utilities\EdeficeCommon\Conversions\HexBinConversion.h"
 #include "Utilities\EdeficeCommon\Exceptions\ErrorException.h"
 
@@ -122,7 +122,7 @@ void Debug::LogLastError(_In_ const std::wstring& desc1, _In_ const std::wstring
 
 void Debug::LogException(_In_ const std::wstring& desc1, _In_ const std::wstring& desc2)
 {
-	Support::LogEvent(MYID_EXCEPTION, myid::StringList{m_instance, desc1, desc2});
+	//Support::LogEvent(MYID_EXCEPTION, myid::StringList{m_instance, desc1, desc2});
 	Log(desc1, desc2 + L"exception");
 }
 
@@ -144,19 +144,19 @@ void LogEvent(_In_ int id, _In_ const myid::StringList& messages, _In_z_ const w
 		WORD type;
 		switch ((id >> 30) & 0x3)
 		{
-		case STATUS_SEVERITY_SUCCESS:
+		//case STATUS_SEVERITY_SUCCESS:
 		default:
 			type = EVENTLOG_SUCCESS;
 			break;
-		case STATUS_SEVERITY_INFORMATIONAL:
-			type = EVENTLOG_INFORMATION_TYPE;
-			break;
-		case STATUS_SEVERITY_WARNING:
-			type = EVENTLOG_WARNING_TYPE;
-			break;
-		case STATUS_SEVERITY_ERROR:
-			type = EVENTLOG_ERROR_TYPE;
-			break;
+		//case STATUS_SEVERITY_INFORMATIONAL:
+		//	type = EVENTLOG_INFORMATION_TYPE;
+		//	break;
+		//case STATUS_SEVERITY_WARNING:
+		//	type = EVENTLOG_WARNING_TYPE;
+		//	break;
+		//case STATUS_SEVERITY_ERROR:
+		//	type = EVENTLOG_ERROR_TYPE;
+		//	break;
 		}
 
 		ReportEvent(hEventSource, type, 0, id, nullptr, (WORD)messages.size(), 0, (messages.empty() ? nullptr : &msg.front()), nullptr);

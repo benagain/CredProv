@@ -1,0 +1,2 @@
+duplInheritedMember:IPTCredentialProvider\IWrapCredential.h
+*:*/VC1?/*

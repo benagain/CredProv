@@ -1,0 +1,18 @@
+INPUT += ..\CredUITest \
+		 ..\IPTCredentialProvider \
+		 ..\MyIDIntelAuthenticate \
+		 ..\MyIDIntelAuthenticate\Test \
+		 ..\MyIDVirtualReader\MyIDVirtualReader \
+		 ..\MyIDVsc \
+		 ..\MyIDVscCfg \
+		 ..\MyIDVscCfgNet \
+		 ..\MyIDVscCfgNet\TestCfg \
+		 ..\MyIDVscConf \
+		 ..\MyIDVscDriver\MyIDVscDriver \
+		 ..\MyIDVscInstall \
+		 ..\MyIDVscIPT \
+		 ..\MyIDVscService \
+		 ..\Version \
+		 ..\VscCommon \
+		 ..\VscTest \
+		 ..\VscUtilities

@@ -1,0 +1,1 @@
+#define IDR_APDU_XML 20003
