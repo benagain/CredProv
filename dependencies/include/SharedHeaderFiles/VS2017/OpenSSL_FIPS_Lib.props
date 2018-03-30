@@ -1,0 +1,11 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ImportGroup Label="PropertySheets"
+    Condition="'$(Configuration)'=='Release_UML' or '$(Configuration)'=='Debug_UML' or '$(Configuration)'=='Veracode_UML'" >
+    <Import Project="OpenSSL_Link.props" />
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets"
+    Condition="'$(Configuration)'=='Release_UMD' or '$(Configuration)'=='Debug_UMD' or '$(Configuration)'=='Veracode_UMD'" >
+    <Import Project="OpenSSL_FIPS.props" />
+  </ImportGroup>
+</Project>

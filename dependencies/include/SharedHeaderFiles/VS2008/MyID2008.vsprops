@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="Windows-1252"?>
+<VisualStudioPropertySheet
+	ProjectType="Visual C++"
+	Version="8.00"
+	Name="MyID2008"
+	OutputDirectory=".\VC9\$(ConfigurationName)"
+	IntermediateDirectory="$(OutDir)\Obj"
+	InheritedPropertySheets=".\SourceBase2008.vsprops;.\Boost2008.vsprops"
+	>
+	<Tool
+		Name="VCBscMakeTool"
+		OutputFile="$(OutDir)/$(TargetName).bsc"
+	/>
+	<Tool
+		Name="VCCLCompilerTool"
+		InlineFunctionExpansion="2"
+		FavorSizeOrSpeed="1"
+		AdditionalIncludeDirectories="$(DirLevel)"
+		PreprocessorDefinitions="WIN32;_WINDOWS"
+		MinimalRebuild="true"
+		ExceptionHandling="2"
+		EnableFunctionLevelLinking="true"
+		UsePrecompiledHeader="2"
+		WarningLevel="4"
+		WarnAsError="true"
+		DebugInformationFormat="3"
+	/>
+	<Tool
+		Name="VCLinkerTool"
+		LinkIncremental="1"
+		ModuleDefinitionFile="$(ProjectName).def"
+		SubSystem="2"
+		TargetMachine="1"
+	/>
+	<Tool
+		Name="VCMIDLTool"
+		AdditionalIncludeDirectories="$(DirLevel)"
+		TypeLibraryName="$(InputName).tlb"
+		OutputDirectory="VC9"
+		HeaderFileName="$(InputName).h"
+		InterfaceIdentifierFileName="$(InputName)_i.c"
+		ProxyFileName="$(InputName)_p.c"
+	/>
+	<Tool
+		Name="VCResourceCompilerTool"
+		PreprocessorDefinitions="NET=1500"
+		Culture="2057"
+		AdditionalIncludeDirectories="$(DirLevel)"
+	/>
+	<UserMacro
+		Name="DirLevel"
+		Value="..\.."
+	/>
+</VisualStudioPropertySheet>

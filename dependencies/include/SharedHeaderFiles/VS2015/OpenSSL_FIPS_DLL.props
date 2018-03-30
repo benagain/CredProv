@@ -1,0 +1,19 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ImportGroup Label="PropertySheets">
+    <Import Project="OpenSSL_FIPS_Lib.props" />
+  </ImportGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)'=='Release_UMD' or '$(Configuration)'=='Debug_UMD' or '$(Configuration)'=='Veracode_UMD'" >
+    <CustomBuildStep>
+      <Command>copy /y $(OpenSSLFIPSPath)\$(VC)\$(Configuration)$(PlatformSuffix)\*.dll $(OutDir)
+copy /y $(OpenSSLFIPSPath)\$(VC)\$(Configuration)$(PlatformSuffix)\*.pdb $(OutDir)</Command>
+    </CustomBuildStep>
+    <CustomBuildStep>
+      <Message>Copy OpenSSL DLLs</Message>
+    </CustomBuildStep>
+    <CustomBuildStep>
+      <Outputs>$(OutDir)Edefice-libeay-$(OpenSSLVer)-$(VC)$(PlatformSuffix).dll;$(OutDir)Edefice-ssleay-$(OpenSSLVer)-$(VC)$(PlatformSuffix)$(DebugSuffix).dll;%(Outputs)</Outputs>
+      <Inputs>$(OpenSSLFIPSPath)\$(VC)\$(Configuration)$(PlatformSuffix)\Edefice-libeay-$(OpenSSLVer)-$(VC)$(PlatformSuffix)$(DebugSuffix).dll;$(OpenSSLFIPSPath)\$(VC)\$(Configuration)$(PlatformSuffix)\Edefice-ssleay-$(OpenSSLVer)-$(VC)$(PlatformSuffix)$(DebugSuffix).dll;%(Inputs)</Inputs>
+    </CustomBuildStep>
+  </ItemDefinitionGroup>
+</Project>

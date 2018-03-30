@@ -1,0 +1,69 @@
+// CSPCertEnroll.idl : IDL source for CSPCertEnroll.dll
+//
+
+// This file will be processed by the MIDL tool to
+// produce the type library (CSPCertEnroll.tlb) and marshalling code.
+
+import "oaidl.idl";
+import "ocidl.idl";
+
+import "Keypair.idl";
+
+[
+	uuid(7E56D85B-3689-41DD-A390-816ED58A9CAD),
+	version(1.0),
+	helpstring("CSPCertEnroll 1.0 Type Library")
+]
+library CSPCERTENROLLLib
+{
+	importlib("stdole32.tlb");
+	importlib("stdole2.tlb");
+
+	// create a CMC request using a CSP that exports the private key for archive
+	[
+		uuid(4BC1B08A-26C1-4610-BFD4-2F5468EF0009),
+		helpstring("CSPCertEnrollArchivable Class")
+	]
+	coclass CSPCertEnrollArchivable
+	{
+		[default] interface ICertificateEnroll;
+	};
+
+	// create a PKS10 request using a CSP using low-level functionality to bypass XEnroll
+	[
+		uuid(61CB7A57-4AF8-4CF9-8008-0EFA946DCADB),
+		helpstring("CSPLowLevelCertEnroll Class")
+	]
+	coclass CSPLowLevelCertEnroll
+	{
+		[default] interface ICertificateEnroll;
+	};
+
+	// create a CMC request for key archival using CSP's that do not support key archival
+	[
+		uuid(D02222C1-BC11-4473-8F7A-137973A3326D),
+		helpstring("DualCSPCertEnroll Class")
+	]
+	coclass DualCSPCertEnroll
+	{
+		[default] interface ICertificateEnroll;
+	};
+	//Create P10 request (with encrypted key archive) using CSP's that do not support key archival
+	[
+		uuid(DB0262AF-2F7A-4E31-A46D-9F3E7E31CA4A),
+		helpstring("DualCSPCertEnrollP10Archive Class")
+	]
+	coclass DualCSPCertEnrollP10Archive
+	{
+		[default] interface ICertificateEnroll;
+	};
+	// Create PKC10 request using XEnroll
+	[
+		uuid(5A03367E-AD30-4E5E-A9C6-05AD19D1DB8C),
+		helpstring("CSPCertEnrollP10 Class")
+	]
+	coclass CSPCertEnrollP10
+	{
+		[default] interface ICertificateEnroll;
+	};
+};

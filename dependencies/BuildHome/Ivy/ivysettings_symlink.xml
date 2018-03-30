@@ -1,0 +1,11 @@
+<ivy-settings>
+	<triggers>
+		<!-- <ant-call target="unzip" prefix="dep" event="post-retrieve-artifact" filter="ext=zip" /> -->
+<!-- 		<ant-call target="storeProperties" prefix="prop" event="pre-retrieve-artifact" filter="ext=properties"/> -->
+		<!-- <ant-call target="lib" prefix="lib" event="pre-retrieve-artifact" filter="type=lib" /> -->
+
+       <ant-call target="unzip" prefix="dep" event="post-retrieve-artifact" filter="ext=zip AND type=include AND NOT organisation=3rdparty"/>
+       <ant-call target="symlink-includes" prefix="dep" event="post-retrieve-artifact" filter="ext=zip AND type=include AND organisation=3rdparty"/>
+       <ant-call target="symlink-module" prefix="dep" event="post-retrieve-artifact" filter="ext=zip AND NOT type=include AND NOT type=zip"/>
+	</triggers>
+</ivy-settings>

@@ -1,0 +1,110 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <Filter Include="VscCommon">
+      <UniqueIdentifier>{6e9f46ad-ab94-44fa-8547-17b9fe865266}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Main">
+      <UniqueIdentifier>{170a2fb7-ddad-4a61-95a5-8d342903d7cb}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header">
+      <UniqueIdentifier>{660ed988-8644-4fc8-8845-b29412159c15}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="SDK">
+      <UniqueIdentifier>{c244d3f3-1a86-4e7c-a0b7-bc74a8dbc14d}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="VscMiniDriver">
+      <UniqueIdentifier>{a0d59093-7880-4d11-9803-8df6b09c1630}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="Debug.cpp">
+      <Filter>VscCommon</Filter>
+    </ClCompile>
+    <ClCompile Include="IPC.cpp">
+      <Filter>VscCommon</Filter>
+    </ClCompile>
+    <ClCompile Include="Support.cpp">
+      <Filter>VscCommon</Filter>
+    </ClCompile>
+    <ClCompile Include="ValidAtr.cpp">
+      <Filter>VscCommon</Filter>
+    </ClCompile>
+    <ClCompile Include="VscPinPolicy.cpp">
+      <Filter>VscCommon</Filter>
+    </ClCompile>
+    <ClCompile Include="stdafx.cpp">
+      <Filter>Main</Filter>
+    </ClCompile>
+    <ClCompile Include="VscPipe.cpp">
+      <Filter>VscCommon</Filter>
+    </ClCompile>
+    <ClCompile Include="VscMiniDriver.cpp">
+      <Filter>VscMiniDriver</Filter>
+    </ClCompile>
+    <ClCompile Include="VscMiniDriverBase.cpp">
+      <Filter>VscMiniDriver</Filter>
+    </ClCompile>
+    <ClCompile Include="VscMiniDriverSCard.cpp">
+      <Filter>VscMiniDriver</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="Debug.h">
+      <Filter>VscCommon</Filter>
+    </ClInclude>
+    <ClInclude Include="IPC.h">
+      <Filter>VscCommon</Filter>
+    </ClInclude>
+    <ClInclude Include="Support.h">
+      <Filter>VscCommon</Filter>
+    </ClInclude>
+    <ClInclude Include="ValidAtr.h">
+      <Filter>VscCommon</Filter>
+    </ClInclude>
+    <ClInclude Include="VscPinPolicy.h">
+      <Filter>VscCommon</Filter>
+    </ClInclude>
+    <ClInclude Include="stdafx.h">
+      <Filter>Main</Filter>
+    </ClInclude>
+    <ClInclude Include="Errors.h">
+      <Filter>Header</Filter>
+    </ClInclude>
+    <ClInclude Include="Msg\EventLog.h">
+      <Filter>Main</Filter>
+    </ClInclude>
+    <ClInclude Include="VscAPDU.h">
+      <Filter>Header</Filter>
+    </ClInclude>
+    <ClInclude Include="VscApi.h">
+      <Filter>Header</Filter>
+    </ClInclude>
+    <ClInclude Include="VscDevice.h">
+      <Filter>Header</Filter>
+    </ClInclude>
+    <ClInclude Include="VscPipe.h">
+      <Filter>VscCommon</Filter>
+    </ClInclude>
+    <ClInclude Include="VscMiniDriver.h">
+      <Filter>VscMiniDriver</Filter>
+    </ClInclude>
+    <ClInclude Include="VscMiniDriverBase.h">
+      <Filter>VscMiniDriver</Filter>
+    </ClInclude>
+    <ClInclude Include="VscMiniDriverSCard.h">
+      <Filter>VscMiniDriver</Filter>
+    </ClInclude>
+    <ClInclude Include="..\SDK\Intel\MyIDIntelCfg.h">
+      <Filter>SDK</Filter>
+    </ClInclude>
+    <ClInclude Include="..\SDK\Minidriver\MyIDVscDriverAPI.h">
+      <Filter>SDK</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <MessageCompile Include="EventLog.mc">
+      <Filter>Main</Filter>
+    </MessageCompile>
+  </ItemGroup>
+</Project>

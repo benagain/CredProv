@@ -1,0 +1,46 @@
+// APDUCard.idl : IDL source for APDUCard.dll
+//
+
+// This file will be processed by the MIDL tool to
+// produce the type library (APDUCard.tlb) and marshalling code.
+
+import "oaidl.idl";
+import "ocidl.idl";
+
+
+import "eSCardCOM.idl";
+	[
+		object,
+		uuid(432B48FF-9384-45a7-B227-C05525696A5E),
+		dual,
+		helpstring("IAPDUCard Interface"),
+		pointer_default(unique)
+	]
+	interface IAPDUCard : IDispatch
+	{
+		[id(1), helpstring("method IsValid")] HRESULT IsValid([out, retval] short *pVal);
+		[id(2), helpstring("method SendCommand")] HRESULT SendCommand([in, out] ISCardCmd **pSCardCmd, [out, retval] unsigned short *pStatusWord);
+
+		[id(3), helpstring("method _SetHandle")] HRESULT _SetHandle([in] unsigned long Val);
+		[id(4), helpstring("method _Invalidate")] HRESULT _Invalidate();
+		// the handle passed in will be bigger for 64bit build. _SetHandle64 is back-compat with 32bit also
+		[id(5), helpstring("method _SetHandle64")] HRESULT _SetHandle64([in] ULONG_PTR Val);
+	};
+
+
+
+	[
+		object,
+		uuid(991B0EAF-4258-4dff-A05E-0FB695EEB38D),
+		dual,
+		helpstring("IAPDUProcessor Interface"),
+		pointer_default(unique)
+	]
+	interface IAPDUProcessor : IDispatch
+	{
+		[id(1), helpstring("method Initialise")] HRESULT Initialise([in] IAPDUCard *pVal);
+		[id(2), helpstring("method IsInitialised")] HRESULT IsInitialised([out, retval] short *pVal);
+		[id(3), helpstring("method ProcessString")] HRESULT ProcessString([in] BSTR bstrDataToProcess, [out, retval] BSTR *bstrDataProcessed);
+		[id(4), helpstring("method Process")] HRESULT Process([in, out] IUnknown **pObjectToProcess);
+	};
+

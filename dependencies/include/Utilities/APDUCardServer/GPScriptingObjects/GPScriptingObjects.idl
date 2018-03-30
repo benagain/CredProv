@@ -1,0 +1,82 @@
+// GPScriptingObjects.idl : IDL source for GPScriptingObjects
+//
+
+// This file will be processed by the MIDL tool to
+// produce the type library (GPScriptingObjects.tlb) and marshalling code.
+
+import "oaidl.idl";
+import "ocidl.idl";
+
+#include "ScriptConstructor.idl"
+#include "IGPScriptingObjects.idl"
+
+[
+	uuid(7BA6285E-54DD-490E-898A-8A08E82B4009),
+	version(1.0),
+	helpstring("GPScriptingObjects 1.0 Type Library")
+]
+library GPScriptingObjectsLib
+{
+	importlib("stdole2.tlb");
+
+	enum EncodingTypes;
+	enum TKeyComponent;
+	enum TCryptoHashTypes;
+
+	[
+		uuid(38F8B239-A75F-449F-83AA-D36815F91543),
+		helpstring("ByteString Class")
+	]
+	coclass ByteString
+	{
+		[default] interface IByteString;
+		interface ISerialiseXML;
+//		interface IScriptConstructor;
+	};
+	[
+		uuid(F490E1C9-AA23-4826-B96A-CE70099EE8F0),
+		helpstring("ByteBuffer Class")
+	]
+	coclass ByteBuffer
+	{
+		[default] interface IByteBuffer;
+		interface ISerialiseXML;
+//		interface IScriptConstructor;
+	};
+	[
+		uuid(A05EF81B-5C2F-461A-BA66-27E2FC1ACBE9),
+		helpstring("TLV Class")
+	]
+	coclass TLV
+	{
+		[default] interface ITLV;
+		interface ISerialiseXML;
+//		interface IScriptConstructor;
+	};
+	[
+		uuid(73D7C9B2-7389-4246-8D75-971C4C58FED8),
+		helpstring("Key Class")
+	]
+	coclass Key
+	{
+		[default] interface IKey;
+		interface ISerialiseXML;
+	};
+	[
+		uuid(087DC27A-8FDE-4767-9EB2-3B4A2F454CA0),
+		helpstring("Crypto Class")
+	]
+	coclass Crypto
+	{
+		[default] interface ICrypto;
+	};
+	[
+		uuid(47E9CB01-5F35-4A25-ACAA-8B5112CCFF0A),
+		helpstring("TLVList Class")
+	]
+	coclass TLVList
+	{
+		[default] interface ITLVList;
+		interface ISerialiseXML;
+	};
+};

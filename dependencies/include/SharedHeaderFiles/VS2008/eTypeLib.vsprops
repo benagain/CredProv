@@ -1,0 +1,20 @@
+﻿<?xml version="1.0" encoding="Windows-1252"?>
+<VisualStudioPropertySheet
+	ProjectType="Visual C++"
+	Version="8.00"
+	Name="eTypeLib"
+	OutputDirectory=".\VC9\$(ConfigurationName)"
+	IntermediateDirectory="VC9"
+	InheritedPropertySheets="MyID2008.vsprops"
+	>
+	<Tool
+		Name="VCMIDLTool"
+		PreprocessorDefinitions="ETYPELIB"
+		AdditionalIncludeDirectories="$(DirLevel)"
+		TypeLibraryName="$(InputName).tlb"
+		OutputDirectory="VC9"
+		HeaderFileName="$(InputName).h"
+		InterfaceIdentifierFileName="$(InputName)_i.c"
+		ProxyFileName="$(InputName)_p.c"
+	/>
+</VisualStudioPropertySheet>

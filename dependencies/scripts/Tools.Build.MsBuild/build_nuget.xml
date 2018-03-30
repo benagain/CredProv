@@ -1,0 +1,16 @@
+<project name="Build.Nuget" >
+	<target name="nuget-restore" extensionOf="ready-to-build" >
+		<nuget-restore />
+	</target>
+
+	<!-- Restore NuGet packages for project.  Currently assumes the solution is in the current directory. -->
+	<macrodef name="nuget-restore">
+		<sequential>
+			<exec executable="${dependency.dir}/tools/nuget/nuget.exe" failonerror="true">
+				<arg value="restore" />
+				<arg value="-configfile" />
+				<arg value="${build.home}/Ivy/bin/nuget.config" />
+			</exec>
+		</sequential>
+	</macrodef>
+</project>

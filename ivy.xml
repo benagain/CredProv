@@ -20,10 +20,12 @@
 		<dependency org="3rdparty" name="MSXML" rev="6.0+" conf="x32,x64->win32,source" />
 		<dependency org="3rdparty" name="Boost" rev="1.66.0+"  conf="x32,x64->vc10,include,vc15" />
 		<dependency org="3rdparty" name="OpenSSL" rev="1.0.2h+" conf="x32,x64->win32,win64,source" />
-		<dependency org="3rdparty" name="pkcs" rev="2.40+" conf="x32,x64->include" />
+    <dependency org="3rdparty" name="pkcs" rev="2.40+" conf="x32,x64->include" />
+    <dependency org="3rdparty" name="CNG" rev="8.1.1+" conf="x32,x64->source,win32,win64" />
 
 		<!-- myid dependencies  -->
 		<dependency org="myid.platform" name="SharedHeaderFiles" rev="1.+" conf="x32,x64->source" />
+		<dependency org="myid.utilities" name="EdeficeCommon" rev="200.+" conf="x32->vc10,include,vc15"/>
 		<!--<dependency org="myid.utilities" name="eTypeLib" rev="200.+" conf="x32,x64->vc10,include,vc15" />-->
 	</dependencies>
 </ivy-module>

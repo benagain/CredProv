@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="Windows-1252"?>
+<VisualStudioPropertySheet
+	ProjectType="Visual C++"
+	Version="8.00"
+	Name="Interop2008"
+	>
+	<Tool
+		Name="VCPostBuildEventTool"
+		Description="Creating Interop"
+		CommandLine="&quot;$(InputDir)\$(DirLevel)\Batch Build\CreateInterop.exe&quot; $(TargetPath) $(ProjectName)Lib $(TargetDir) Interop.$(ProjectName)Lib.dll"
+	/>
+</VisualStudioPropertySheet>

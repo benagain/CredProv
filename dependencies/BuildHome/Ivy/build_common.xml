@@ -1,0 +1,455 @@
+<project xmlns:ivy="antlib:org.apache.ivy.ant" name="IvyCommon" >
+	<import file="ivyproperties.xml" />
+	<import file="ivy_common_retrieve.xml" />
+	<import file="antcontrib.xml" />
+
+	<target name="environment-not-set"><fail message="Build environment already specified" if="build.platform"/></target>
+	<target name="environment-set"><fail message="Build environment not specified" unless="build.platform"/></target>
+	
+	<property name="ivy.retrieve.pattern" location="${ivy.base.dir}/artifacts/[organisation]/[module]/[artifact]-[revision].[ext]" />
+
+    <macrodef name="quiet">
+        <element name="body" implicit="yes"/>
+        <sequential>
+            <script language="javascript">
+                project.getBuildListeners().firstElement().setMessageOutputLevel(0);
+            </script>
+            <body/>
+            <script language="javascript">
+                // TODO: restore last log level
+                project.getBuildListeners().firstElement().setMessageOutputLevel(2);
+            </script>
+        </sequential>
+    </macrodef>
+	
+	<target name="load-ivy" unless="ivy.loaded" >
+		<taskdef resource="org/apache/ivy/ant/antlib.xml" uri="antlib:org.apache.ivy.ant" classpath="${ivy.lib.dir}/bin/ivy-2.4.0.jar" />
+		<ivy:configure file="${ivy.lib.dir}/ivysettings.xml" override="true"/>
+		<property name="ivy.loaded" value="true" />
+	</target>
+
+	<target name="resolve-buildhome" depends="load-ivy">
+		<ivy:retrieve conf="dev" log="quiet" />
+	</target>
+
+	<target name="set-build-platform">
+		<property name="ivy.dep.file" value="${project.dependencies}" />
+		<echo level="info">Build dependencies in: ${ivy.dep.file}</echo>
+	</target>
+
+	<target name="resolve-release" description="Retrieve this module's dependencies but clean any local publish first">
+		<antcall target="clean_ivy_local"/>
+		<antcall target="IvyCommon.resolve"/>
+	</target>
+
+	<target name="resolve-without-downloading" depends="set-build-platform, load-ivy, find_revision" unless="is.resolved" >
+		<property name="is.resolved" value="true" />
+		<property name="ivy.resolve.conf" value="*" />
+
+		<ivy:resolve conf="${ivy.resolve.conf}" showprogress="false" log="download-only" />
+		<!-- <ivy:dependencytree /> -->
+
+		<quiet>
+			<antcall target="generate-resolve-reports" />
+		</quiet>
+	</target>
+
+
+	<target name="generate-resolve-reports" >
+		<ivy:info file="${ivy.dep.file}" />	
+
+		<ivy:resolve conf="${ivy.resolve.conf}" resolveId="forExplicitReport" transitive="false" />
+		<ivy:report resolveId="forExplicitReport" todir="${ivy.base.dir}/ivy-report" graph="false" xslfile="${ivy.lib.dir}/Reports/report.xsl" outputpattern="[organisation]-[module]-[conf].Explicit.txt" />
+		<combine-reports name="Explicit" />
+
+		<copy file="${ivy.dep.file}" tofile="${ivy.dep.file}.all.xml" />
+		<replace file="${ivy.dep.file}.all.xml" token="transitive=&quot;false&quot;" value="" />
+
+		<ivy:resolve file="${ivy.dep.file}.all.xml" conf="${ivy.resolve.conf}" resolveId="forReport" />
+		<delete file="${ivy.dep.file}.all.xml" />
+
+		<!-- Create a report of the dependencies used by this module -->
+  		<ivy:report resolveId="forReport" todir="${ivy.base.dir}/ivy-report" graph="false"/>
+		<ivy:report resolveId="forReport" todir="${ivy.base.dir}/ivy-report" graph="false" xml="true"/>
+		<ivy:report resolveId="forReport" todir="${ivy.base.dir}/ivy-report" graph="false" xslfile="${ivy.lib.dir}/Reports/report-json.xsl" outputpattern="[organisation]-[module]-[conf].json" />
+		
+		<ivy:report resolveId="forReport" todir="${ivy.base.dir}/ivy-report" graph="false" xslfile="${ivy.lib.dir}/Reports/report.xsl" outputpattern="[organisation]-[module]-[conf].All.txt" />
+		<combine-reports name="All" />
+	</target>
+
+    <macrodef name="combine-reports">
+		<attribute name="name" default="NOTSET" />
+        <sequential>
+			<concat destfile="${ivy.base.dir}/ivy-report/${ivy.organisation}-${ivy.module}-@{name}.txt">
+				<fileset dir="${ivy.base.dir}/ivy-report" includes="*.@{name}*"/>
+				<filterchain>
+					<sortfilter/>
+					<tokenfilter>
+					  <uniqfilter/>
+					</tokenfilter>
+				</filterchain>
+			</concat>
+		
+			<delete>
+				<fileset dir="${ivy.base.dir}/ivy-report" includes="*.@{name}*"/>
+			</delete>
+		
+        </sequential>
+    </macrodef>
+
+	<extension-point name="resolve.postRetrieve" />
+		
+	<target name="resolve" depends="resolve-without-downloading">
+		<ivy:retrieve />
+		<ant target="resolve.postRetrieve" />
+	</target>
+  
+	<target name="auto-resolve-first-time" unless="have-artefacts" depends="check-artefacts-resolved" >
+		<antcall target="resolve" />
+	</target>  
+	
+	<target name="check-artefacts-resolved">
+		<condition property="have-artefacts">
+			<available  file="${ivy.base.dir}/ivy-report" type="dir" /> 
+		</condition>
+		<echo>have-artefacts: ${have-artefacts}</echo>
+	</target>
+
+	<extension-point name="ready-to-publish" />
+	
+	<target name="common-publish" depends="load-ivy, ivy-new-version, resolve-without-downloading, ready-to-publish">
+		<echo>Version Local: ${ivy.new.revision}</echo>
+
+		<zip destfile="${ivy.zip.dir}/ivy_report.zip"
+		 	basedir="${ivy.base.dir}/ivy-report"
+		 	excludes=""
+		 	includes="**" />
+
+		<antcall target="createZips"/>
+
+		<ivy:deliver deliverpattern="${ivy.base.dir}/[artifact]-[revision].[ext]" pubrevision="${ivy.new.revision}" replacedynamicrev="true" replaceForcedRev="true" />
+
+		<ivy:publish srcivypattern="${ivy.base.dir}/ivy-[revision].xml" resolver="${publishType}" overwrite="true" module="${moduleName}" revision="${ivy.new.revision}" update="true" publishivy="true">
+            <artifact name="module" type="properties"/>
+            <artifact name="ivy_report" type="zip"/>
+			<artifacts pattern="${base.dir}/[artifact].[ext]"/>
+			<artifacts pattern="${base.dir}/libs/ios/armv7/[artifact].[ext]"/>
+			<artifacts pattern="${base.dir}/libs/local/armeabi/[artifact].[ext]"/>
+			<artifacts pattern="${base.dir}/${VC}/[artifact]Debug_UML/[artifact].[ext]"/>
+			<artifacts pattern="${base.dir}/lib/[artifact].[ext]"/>
+			<artifacts pattern="${base.dir}/bin/[artifact].[ext]"/>
+			<artifacts pattern="${ivy.zip.dir}/[artifact].[ext]"/>
+			<artifacts pattern="${basedir}/[artifact].[ext]"/>  <!-- module.properties will always be written to ${basedir}; look here last to avoid conflicts -->
+		</ivy:publish>
+	 </target>
+
+	<target name="createZips" >
+		<antcall target="moduleZip" />
+	</target>
+
+
+	<target name="publish-local" depends="prepare-publish-local, common-publish" />
+	<target name="publish-snapshot" depends="prepare-publish-snapshot, common-publish" />
+	<target name="publish-release" depends="prepare-publish-release, common-publish" />
+
+	<target name="prepare-publish-local" description="Publish a module to the local cache only (for developers)">
+		<property name="zip.whenempty" value="create" />
+		<property name="publishType" value="development"/>
+		<property name="publish.version.suffix" value="-dev" />
+		<property name="publish.revSep" value="" />
+	</target>
+
+	<target name="prepare-publish-release" depends="enter-artifactory-credentials, require-svn-info" >
+		<property name="publishType" value="release"/>
+		<property name="require.all.zips" value="true"/>
+	</target>
+	
+	<target name="prepare-publish-snapshot" depends="prepare-publish-snapshot-without-credentials, enter-artifactory-credentials, require-svn-info" >
+		<property name="require.all.zips" value="true"/>
+	</target>
+
+	<target name="artefact-content-missing">
+		<fail message="Some artefact content is missing" if="require.all.zips" />
+	</target>
+
+
+	<target name="prepare-publish-snapshot-without-credentials" >
+    <property name="publishType" value="snapshot"/>
+  </target>
+
+  <target name="require-svn-info" depends="find_revision, find_revision_git" >
+		<fail unless="svnRevision" message="Cannot publish without subversion information.  `svn info` failed in '${svnDir}'" />
+		<fail unless="svnURL" message="Cannot publish without subversion information.  `svn info` failed in '${svnDir}'" />
+    </target>
+
+	<extension-point name="prepare-publish.version" />
+	
+	<!--
+		Version numbers are always at least three digits, regardless of the publish.version.
+		An auto-incrementing digit will be added after the _asked for_ publish.version; with 
+		an additional .0 added if necessary to make up three digits.
+		
+		  publish.version=1		==	 1.0.0  ;  1.1.0  ;  1.2.0
+		  publish.version=2.2	==	 2.2.0  ;  2.2.1  ;  2.2.2
+		
+		For developer builds, the auto-incrementing number is added as a suffix to the three
+		digit build number.  This means that two .0 segments may be added if publish.version
+		is only one digit
+		
+		publish.version=1		==	1.0.0-dev1  ;  1.0.0-dev2  ;  1.0.0-dev3
+		publish.version=2.2		==	2.2.0-dev1  ;  2.2.0-dev2  ;  2.2.0-dev3
+	-->
+	<target name="ivy-new-version" depends="load-ivy, prepare-publish.version" unless="ivy.new.revision">
+		<property name="ivy.dep.file" value="${project.dependencies}" />
+		<property name="publish.version.prefix" value="" />
+		<property name="publish.version.suffix" value="" />
+		<property name="publish.revSep" value="." />
+		<property name="publish.defaultBuildNumber" value="0" />
+
+		<echo level="verbose" message="Looking for next build version of v${publish.version} in ${publishType}" />
+
+		<!-- Read the organisation/module name from the dependency file -->
+		<ivy:info file="${ivy.dep.file}" />
+
+        <!-- this will be literal "${ivy.branch}" if not set, so set it to empty string -->
+        <property name="ivy.branch" value="" />
+
+		<!--
+			The part we ask for is everything before the auto-incrementing segment.  For dev builds this is easy
+			as the incrementing part is the last digit.  For snapshot builds the incrementing part may be the 
+			middle number.
+			
+			Use the presence of a publish.version.suffix to mean dev build.
+		-->
+		<condition property="isSpecialBuild" else="false" >
+			<not><equals arg1="${publish.version.suffix}" arg2="" /></not>
+		</condition>
+		
+		<condition property="startingAddition" value=".0" else="">
+			<istrue value="${isSpecialBuild}" />
+		</condition>
+		
+		<condition property="addition" value="">
+			<matches string="${publish.version}" pattern="\..*\."/>
+		</condition>
+
+		<condition property="addition" value="${startingAddition}">
+			<matches string="${publish.version}" pattern="\."/>
+		</condition>
+
+		<property name="addition" value="${startingAddition}.0" />
+
+		<condition property="use.publish.version" value="${publish.version}${addition}${publish.version.suffix}" else="${publish.version}">
+			<istrue value="${isSpecialBuild}" />
+		</condition>
+				
+		<ivy:buildnumber
+			organisation="${ivy.organisation}" module="${ivy.module}" branch="${ivy.branch}"
+			revision="${use.publish.version}"
+            revSep="${publish.revSep}"
+            defaultBuildNumber="${publish.defaultBuildNumber}"
+			resolver="${publishType}"
+			prefix="detect"
+			/>
+			
+		<property name="ivy.new.build.number" value="${detect.new.build.number}" />
+		<property name="ivy.revision" value="${detect.revision}" />
+		<condition property="ivy.build.number" value="${detect.build.number}" else="_">
+			<isset property="detect.build.number" />
+		</condition>
+
+		<condition property="ivy.new.revision" 
+			value="${detect.new.revision}" 
+			else ="${detect.new.revision}${addition}"
+		>
+			<istrue value="${isSpecialBuild}" />
+		</condition>
+
+		<echo message="Version: ${detect.revision} => ${ivy.new.revision} ; ${ivy.build.number} => ${ivy.new.build.number}" />
+	</target>
+
+	<target name="enter-artifactory-credentials" >
+		<input message="Please enter the password for ${artifactory.username}: "
+			   addproperty="artifactory.password" >
+			<handler type="secure" />
+		</input>
+	</target>
+
+
+	<target name="jenkins-publish-multi" >
+		<property name="zipArtefactsPresent" value="yes" />
+		<antcall target="publish-snapshot"/>
+	</target>
+
+	<!-- Pre copy trigger task - runs before an artifact is copied from the cache
+	to our build area. Trigger is defined in the ivysetting.xml file -->
+	<target name="unzip">
+		<condition property="unzip_dir" value="" else="${dep.module}/">
+			<or>
+				<equals arg1="${dep.type}" arg2="include" />
+				<equals arg1="${dep.type}" arg2="interface" />
+				<equals arg1="${dep.type}" arg2="lib" />
+			</or>
+		</condition>
+
+		<echo level="verbose">
+			unzipping artifact:
+			artifact=${dep.artifact}
+			type=${dep.type}
+			from=${dep.from}
+			module=${dep.module}
+		</echo>
+		<!-- Unzip the src files and put them into the dest dir in sub folders
+		     based on the dependency type (as shown in ivy.xml file)
+	    	 i.e. docs go to docs directory and include go to include directory -->
+		<unzip src="${dep.from}" dest="${unzip.destination}/${dep.type}/${unzip_dir}"/>
+	</target>
+
+	<!-- Pre copy trigger task - runs before an artifact is copied from the cache
+	to our build area. Trigger is defined in the ivysetting.xml file -->
+	<target name="storeProperties">
+		<echo level="verbose">
+			storing properties artifact:
+			artifact=${prop.artifact}
+			type=${prop.type}
+			from=${prop.from}
+			module=${prop.module}
+		</echo>
+		<copy file="${prop.from}" tofile="${dependency.dir}/srcTrace/${prop.module}"/>
+	</target>
+
+	<!-- Pre copy trigger task - runs before an artifact is copied from the cache
+	to our build area. Trigger is defined in the ivysetting.xml file -->
+	<target name="lib">
+		<echo level="verbose">
+			storing properties artifact:
+			artifact=$lib.artifact}
+			type=${lib.type}
+			from=${lib.from}
+			module=${lib.module}
+		</echo>
+		<copy file="${lib.from}" tofile="/${dependency.dir}/${lib.type}/${lib.artifact}.${lib.ext}"/>
+	</target>
+
+
+	<target name="copy-tool-file">
+		<mkdir dir="${dependency.dir}/tools/${tool.artifact}" />
+		<copy file="${tool.from}" tofile="${dependency.dir}/tools/${tool.artifact}/${tool.artifact}.${tool.ext}" overwrite="true"/>
+	</target>
+
+
+	<target name="unzip-tool">
+		<unzip src="${tool.from}" dest="${unzip.destination}/tools"/>
+	</target>
+
+
+	<target name="find_revision" depends="find_revision_svn, find_revision_git" >
+		<echo>Revision found  : ${svnRevision}</echo>
+		<echo>Module URL found: ${svnURL}</echo>
+
+		<mkdir dir="${ivy.zip.dir}/"/>
+		<delete file="${ivy.zip.dir}/module.properties"/>
+		<echoproperties regex="svn*" destfile="${ivy.zip.dir}/module.properties"/>
+	</target>
+	
+	<target name="find_revision_svn" depends="AntContrib.import" unless="svnURL" >
+		<property name="revision" value="HEAD"/>
+
+		<echo level="verbose"> Attempting to read the SVN revision information from "${svnDir}"</echo>
+		<!-- find out revision number of HEAD, need svn.exe installed on local machine -->
+		<exec executable="svn" outputproperty="svnlog.out" failonerror="false">
+			<arg line="info ${svnDir}"/>
+		</exec>
+
+		<!-- <echo>${svnlog.out}</echo> -->
+
+		<propertyregex property="svnRevision" input="${svnlog.out}" select="\1">
+			<regexp pattern="Last Changed Rev: ([0-9]*)"/>
+		</propertyregex>
+		<propertyregex property="svnURL" input="${svnlog.out}" select="\1">
+			<regexp pattern="URL: (.*)[\r\n]"/>
+		</propertyregex>
+
+	</target>
+
+	
+	<target name="find_revision_git" depends="AntContrib.import" unless="svnURL" >
+		<property name="revision" value="HEAD"/>
+
+		<echo level="verbose"> Attempting to read the git revision information from "${svnDir}"</echo>
+		<exec executable="git" outputproperty="git.remote.origin.url" failonerror="false">
+			<arg line="config --get remote.origin.url"/>
+		</exec>
+		<exec executable="git" outputproperty="git.branch" failonerror="false">
+			<arg line="rev-parse --abbrev-ref HEAD"/>
+		</exec>
+		<exec executable="git" outputproperty="svnRevision" failonerror="false">
+			<arg line="rev-parse HEAD"/>
+		</exec>
+
+		<propertyregex property="gitBranch" input="${git-branch.out}" select="\1">
+			<regexp pattern="\*\W+(.*)"/>
+		</propertyregex>
+		
+		<property name="svnURL" value="${git.remote.origin.url} [${git.branch}]"/>
+	</target>
+
+	
+	<!-- Clean up any local dependencies, and wipe cache -->
+	<target name="clean_ivy" description="Wipe out system-wide cache and clean dependencies for this module" >
+		<antcall target="clean_deps" />
+		<antcall target="clean_ivy_local"/>
+		<antcall target="clean_ivy_cache"/>
+	</target>
+
+	<target name="clean_deps" description="Clean dependencies out for this module" >
+		<delete includeemptydirs="true">
+			<fileset dir="${dependency.dir}">
+				<include name="**/*"/>
+				<exclude name="BuildHome/"/>
+			</fileset>
+		</delete>
+
+		<delete file="module.properties"/>
+		<delete dir="${ivy.base.dir}/ivy-report"/>
+		<delete dir="${ivy.base.dir}/artifacts"/>
+		<delete dir="${ivy.zip.dir}"/>
+	</target>
+
+	<target name="clean_ivy_local" description="Wipe out the system-wide ivy cache" >
+		<delete dir="${ivy.local.default.root}"/>
+	</target>
+
+	<target name="clean_ivy_cache" depends="load-ivy" description="Wipe out the system-wide artifactory cache" >
+		<ivy:cleancache/>
+	</target>
+
+
+	<target name="fetch_source" description="Fetch the source code for a dependency to allow src level debug of an artefact" >
+		<property name="theModule" value="${module}"/>
+		<property file="${base.dir}/${dependency.dir}/srcTrace/${theModule}" />
+
+		<!-- TODO - Make this work properly
+		<assert name="svnRevision"/>
+	-->
+
+
+		<echo>Revision found  : ${svnRevision}</echo>
+		<echo>Module URL found: ${svnURL}</echo>
+
+		<property name="itemToFetch" value="${svnURL}@${svnRevision}"/>
+		<property name="outputDir" value="${base.dir}/${dependency.dir}/srcTrace/${theModule}_src"/>
+
+		<mkdir dir="${outputDir}" />
+
+		<echo>Fetch: ${itemToFetch}</echo>
+		<echo>Write to: ${outputDir}</echo>
+		<echo>Fetch of source in progress ... please wait!</echo>
+
+		<exec dir="${outputDir}" executable="svn" output="svnlog.out" failonerror="true">
+			<arg line="checkout '${svnURL}@${svnRevision}'"/>
+		</exec>
+	</target>
+
+	</project>
+

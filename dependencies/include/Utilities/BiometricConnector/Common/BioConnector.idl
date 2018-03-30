@@ -1,0 +1,41 @@
+// BioConnector interface definitions
+
+import "oaidl.idl";
+import "ocidl.idl";
+
+/// Client Connector Interface
+[
+	object,
+	uuid(0BB3F0AB-219A-49FC-8266-BD9FF20B0093),
+	dual,
+	helpstring("IBioClientConnector Interface"),
+	pointer_default(unique)
+]
+interface IBioClientConnector : IDispatch
+{
+	[id(1), helpstring("method deviceXml")] HRESULT MakeDeviceXml( [in] BSTR deviceId, [out, retval] BSTR * xmlDevice );
+	[id(2), helpstring("method Enumerate")] HRESULT Enumerate( [in] BSTR xmlFilter, [out, retval] BSTR * xmlDevice );
+	[id(3), helpstring("method Enroll")] HRESULT Enroll( [in] BSTR xmlDevice, [out, retval] BSTR * xmlTemplate );
+	[id(4), helpstring("method Capture")] HRESULT Capture( [in] BSTR xmlDevice, [out, retval] BSTR * xmlCapture );
+	[id(5), helpstring("method Verify")] HRESULT Verify( [in] BSTR xmlDevice, [in] BSTR xmlCapture, [in] BSTR xmlTemplate, [out, retval] BSTR * xmlResult );
+
+	[id(6), helpstring("method CbeffXmlFromVendor")] HRESULT CbeffXmlFromVendor( [in] BSTR vendorXml, [out, retval] BSTR * cbeffXml );
+	[id(7), helpstring("method VendorXmlFromCbeff")] HRESULT VendorXmlFromCbeff( [in] BSTR cbeffXml, [out, retval] BSTR * vendorXml );
+};
+
+
+/*
+/// Server Connector Interface
+[
+	object,
+	uuid(0BB3F0AB-219A-49FC-8266-BD9FF20B0094),
+	dual,
+	helpstring("IBioClientConnector Interface"),
+	pointer_default(unique)
+]
+interface IBioServerConnector : IDispatch
+{
+	[id(1), helpstring("method CbeffXmlFromVendor")] HRESULT CbeffXmlFromVendor( [in] BSTR vendorXml, [out, retval] BSTR * cbeffXml );
+	[id(2), helpstring("method VendorXmlFromCbeff")] HRESULT VendorXmlFromCbeff( [in] BSTR cbeffXml, [out, retval] BSTR * vendorXml );
+};
+*/

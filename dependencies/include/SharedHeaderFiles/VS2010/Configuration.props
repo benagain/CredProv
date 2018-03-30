@@ -1,0 +1,24 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ImportGroup Condition="'$(Configuration)'=='Release_UML'" Label="PropertySheets">
+    <Import Project="MyID_ReleaseUML.props" />
+  </ImportGroup>
+  <ImportGroup Condition="'$(Configuration)'=='Debug_UML'" Label="PropertySheets">
+    <Import Project="MyID_DebugUML.props" />
+  </ImportGroup>
+  <ImportGroup Condition="'$(Configuration)'=='Veracode_UML'" Label="PropertySheets">
+    <Import Project="VeracodeUML.props" />
+  </ImportGroup>
+  <ImportGroup Condition="'$(Configuration)'=='Release_UMD'" Label="PropertySheets">
+    <Import Project="MyID_ReleaseUMD.props" />
+  </ImportGroup>
+  <ImportGroup Condition="'$(Configuration)'=='Debug_UMD'" Label="PropertySheets">
+    <Import Project="MyID_DebugUMD.props" />
+  </ImportGroup>
+  <ImportGroup Condition="'$(Configuration)'=='Veracode_UMD'" Label="PropertySheets">
+    <Import Project="VeracodeUMD.props" />
+  </ImportGroup>
+  <ImportGroup Condition="'$(Platform)'=='x64'" Label="PropertySheets">
+    <Import Project="X64.props" />
+  </ImportGroup>
+</Project>

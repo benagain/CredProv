@@ -1,0 +1,26 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ImportGroup Label="PropertySheets" />
+  <PropertyGroup Label="UserMacros">
+    <!-- Increase the PCH -Zm switch size even further than that defined in MyID.props - catch
+    apparently consumes a lot of memory! -->
+    <PCH_ZmSize>180</PCH_ZmSize>
+  </PropertyGroup>
+  <ItemDefinitionGroup>
+    <ClCompile />
+    <PostBuildEvent Condition="'$(SkipPostBuild)' != 'true'">
+      <Command>echo Start $(TargetName) %time%
+"$(TargetPath)"
+echo End $(TargetName) %time%</Command>
+      <Message>Execute tests</Message>
+    </PostBuildEvent>
+    <Link>
+      <ModuleDefinitionFile>
+      </ModuleDefinitionFile>
+    </Link>
+    <ClCompile>
+      <AdditionalIncludeDirectories>$(SourceBase)\Products\Test\Catch\v1.1;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+    </ClCompile>
+  </ItemDefinitionGroup>
+  <ItemGroup />
+</Project>

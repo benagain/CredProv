@@ -1,0 +1,658 @@
+<project name="PlatformCommon" xmlns:ivy="antlib:org.apache.ivy.ant"
+	xmlns:if="ant:if"
+	xmlns:unless="ant:unless" >
+	<property name="current.default.compiler.version" value="VC10" />
+
+	<import file="${dependency.dir}/scripts/Tools.Build.MsBuild/build_msbuild.xml" />
+	<import file="analyse-cppcheck.xml"/>
+	<import file="analyse-opencppcoverage.xml" />
+	<import file="${ivy.lib.dir}/antcontrib.xml" />
+
+	<target name="Jenkins" description="Jenkins 32 bit build and test" >
+		<antcall target="resolve" />
+		<antcall target="get-version" />
+		<antcall target="build32" />
+		<antcall target="build32-debug" />
+		<antcall target="test" />
+		<antcall target="publish-snapshot" />
+	</target>
+
+	<target name="JenkinsLib" description="Jenkins library build" >
+		<antcall target="resolve" />
+		<antcall target="build-lib" />
+		<antcall target="test" />
+		<antcall target="publish-snapshot" />
+	</target>
+
+	<target name="local" description="Local 32 bit build" >
+		<antcall target="resolve" />
+		<antcall target="get-version" />
+		<antcall target="build32" />
+		<antcall target="build32-debug" />
+		<antcall target="test" />
+		<antcall target="publish-local" />
+	</target>
+
+	<target name="localLib" description="Local library build" >
+		<antcall target="resolve" />
+		<antcall target="build-lib" />
+		<antcall target="test" />
+		<antcall target="publish-local" />
+	</target>
+
+	<target name="test" description="Run tests, cppcheck and opencppcoverage" >
+		<mkdir dir="${base.dir}/TestResults"/>
+
+		<antcall target="cppcheck" />
+
+		<antcall target="InvokeUnitTests">
+			<param name="buildConfiguration" value="Release_UML" />
+		</antcall>
+
+		<antcall target="opencppcoverage" />
+	</target>
+
+	<target name="InvokeUnitTests" depends="identifyUnitTestExe" if="foundUnitTestExe">
+		<exec executable="${unitTestExeName}">
+			<arg value="-r junit" />
+			<arg value="-n ${brokenName}" />
+			<arg value="-o ${base.dir}/TestResults/${brokenName}.Tests.xml" />
+		</exec>
+	</target>
+
+	<target name="set-build-platform" depends="AntContrib.import">
+
+		<propertycopy name="ivy.dep.file" from="project.dependencies"/>
+		<echo>Build with dependencies from ${ivy.dep.file}</echo>
+
+		<quiet>
+			<taskdef resource="org/apache/ivy/ant/antlib.xml" uri="antlib:org.apache.ivy.ant" classpath="${ivy.lib.dir}/ivy-2.3.0.jar" />
+			<ivy:info file="${ivy.dep.file}" />
+		</quiet>
+		<echo level="verbose" >Possible build configurations ${ivy.configurations}</echo>
+
+		<var name="conf.builder" value="include" />
+		<var name="conf.comma" value=", " />
+		<for-all-compilers>
+			<lower string="${compiler.version}" to="lower.version" />
+			<var name="conf.builder" value="${conf.builder}${conf.comma}${lower.version}" />
+			<var name="conf.comma" value=", " />
+		</for-all-compilers>
+
+		<property name="ivy.resolve.conf" value="${conf.builder}" />
+		<echo level="info" message="ivy.resolve.conf: ${ivy.resolve.conf}" />
+	</target>
+
+	<target name="-do-build" depends="auto-resolve-first-time, AntContrib.import">
+		<fail unless="Configuration" />
+		<fail unless="Platform" />
+		<for-all-compilers>
+			<antcall target="-do-build-internal" >
+				<param name="compiler.version" value="${compiler.version}" />
+			</antcall>
+		</for-all-compilers>
+	</target>
+
+	<target name="-do-build-internal" depends="identify-solution">
+		<echo>Running build with compiler: ${compiler.version} ${Configuration} ${Platform}</echo>
+		<antcall target="msbuild">
+			<param name="vs.project.configuration" value="${Configuration}" />
+			<param name="vs.platform" value="${Platform}" />
+		</antcall>
+		<antcall target="CopyTLB" />
+		<!-- For DLLs etc, we need the "real" TLB not the dummy one that comes from the empty IDL file in the project -->
+	</target>
+
+	<target name="build32" description="Release UML 32 bit" >
+		<antcall target="-do-build">
+			<param name="Configuration" value="Release_UML" />
+			<param name="Platform" value="Win32" />
+			<param name="vs.properties" value="SkipPostBuild=true" />
+		</antcall>
+	</target>
+
+	<target name="build32.UMD" description="Release UMD 32 bit" >
+		<antcall target="-do-build">
+			<param name="Configuration" value="Release_UMD" />
+			<param name="Platform" value="Win32" />
+			<param name="vs.properties" value="SkipPostBuild=true" />
+		</antcall>
+	</target>
+
+	<target name="build64" description="Release UML 64 bit" >
+		<antcall target="-do-build">
+			<param name="Configuration" value="Release_UML" />
+			<param name="Platform" value="x64" />
+			<param name="vs.properties" value="SkipPostBuild=true" />
+		</antcall>
+	</target>
+
+	<target name="build64.UMD" description="Release UMD 64 bit" >
+		<antcall target="-do-build">
+			<param name="Configuration" value="Release_UMD" />
+			<param name="Platform" value="x64" />
+			<param name="vs.properties" value="SkipPostBuild=true" />
+		</antcall>
+	</target>
+
+	<target name="build32-debug" description="Debug UML 32 bit" >
+		<antcall target="-do-build">
+			<param name="Configuration" value="Debug_UML" />
+			<param name="Platform" value="Win32" />
+			<param name="vs.properties" value="SkipPostBuild=true" />
+		</antcall>
+	</target>
+
+	<target name="build32-debug.UMD" description="Debug UMD 32 bit" >
+		<antcall target="-do-build">
+			<param name="Configuration" value="Debug_UMD" />
+			<param name="Platform" value="Win32" />
+			<param name="vs.properties" value="SkipPostBuild=true" />
+		</antcall>
+	</target>
+
+	<target name="build64-debug" description="Debug UML 64 bit" >
+		<antcall target="-do-build">
+			<param name="Configuration" value="Debug_UML" />
+			<param name="Platform" value="x64" />
+			<param name="vs.properties" value="SkipPostBuild=true" />
+		</antcall>
+	</target>
+
+	<target name="build64-debug.UMD" description="Debug UMD 64 bit" >
+		<antcall target="-do-build">
+			<param name="Configuration" value="Debug_UMD" />
+			<param name="Platform" value="x64" />
+			<param name="vs.properties" value="SkipPostBuild=true" />
+		</antcall>
+	</target>
+
+	<target name="build32-veracode" description="Veracode UML 32 bit" >
+		<antcall target="-do-build">
+			<param name="Configuration" value="Veracode_UML" />
+			<param name="Platform" value="Win32" />
+			<param name="vs.properties" value="SkipPostBuild=true" />
+		</antcall>
+	</target>
+
+	<target name="build32-veracode.UMD" description="Veracode UMD 32 bit" >
+		<antcall target="-do-build">
+			<param name="Configuration" value="Veracode_UMD" />
+			<param name="Platform" value="Win32" />
+			<param name="vs.properties" value="SkipPostBuild=true" />
+		</antcall>
+	</target>
+
+	<target name="build64-veracode" description="Veracode UML 64 bit" >
+		<antcall target="-do-build">
+			<param name="Configuration" value="Veracode_UML" />
+			<param name="Platform" value="x64" />
+			<param name="vs.properties" value="SkipPostBuild=true" />
+		</antcall>
+	</target>
+
+	<target name="build64-veracode.UMD" description="Veracode UMD 64 bit" >
+		<antcall target="-do-build">
+			<param name="Configuration" value="Veracode_UMD" />
+			<param name="Platform" value="x64" />
+			<param name="vs.properties" value="SkipPostBuild=true" />
+		</antcall>
+	</target>
+
+	<target name="build" description="Release UML 32,64 bit" >
+		<antcall target="build32" />
+		<antcall target="build64" />
+	</target>
+
+	<target name="build-debug" description="Debug UML 32,64 bit" >
+		<antcall target="build32-debug" />
+		<antcall target="build64-debug" />
+	</target>
+
+	<target name="build-veracode" description="Veracode UML 32,64 bit" >
+		<antcall target="build32-veracode" />
+		<antcall target="build64-veracode" />
+	</target>
+
+	<target name="build-all" depends="build, build-debug, build-veracode" description="Release, debug, veracode UML 32,64 bit" />
+
+	<target name="build-lib"  description="Build all libraries" >
+		<antcall target="PlatformCommon.build32" />
+		<antcall target="PlatformCommon.build64" />
+		<antcall target="PlatformCommon.build32.UMD" />
+		<antcall target="PlatformCommon.build64.UMD" />
+		<antcall target="PlatformCommon.build32-debug" />
+		<antcall target="PlatformCommon.build64-debug" />
+		<antcall target="PlatformCommon.build32-debug.UMD" />
+		<antcall target="PlatformCommon.build64-debug.UMD" />
+		<antcall target="PlatformCommon.build32-veracode" />
+		<antcall target="PlatformCommon.build64-veracode" />
+		<!-- <antcall target="PlatformCommon.build32-veracode.UMD" /> -->
+		<!-- <antcall target="PlatformCommon.build64-veracode.UMD" /> -->
+	</target>
+	
+	<macrodef name="for-all-compilers">
+		<element name="task" optional="no" implicit="yes" />
+		<sequential>
+			<!-- usually a developer will only want to compile the currently supported toolchain for expedience -->
+			<property name="compiler.versions" value="${current.default.compiler.version}" />
+
+			<for list="${compiler.versions}" param="compiler.version" delimiter=",; ">
+				<sequential>
+					<local name="compiler.version" />
+					<property name="compiler.version" value="@{compiler.version}" />
+					<task />
+				</sequential>
+			</for>	
+		</sequential>
+	</macrodef>
+
+	<target name="-getBrokenName" depends="AntContrib.import">
+		<if>
+			<equals arg1="${moduleName}" arg2="ServerCore.SmartCardCOM" />
+			<then>
+				<propertyregex property="spacedModuleName" input="${moduleName}" regexp="SmartCardCOM" replace="Smart%20Card%20COM" global="true" defaultValue="${moduleName}" />
+				<propertyregex property="brokenName" input="${spacedModuleName}" regexp=".*\." replace="" global="true" defaultValue="${spacedModuleName}" />
+			</then>
+			<else>
+				<propertyregex property="brokenName" input="${moduleName}" regexp=".*\." replace="" global="true" defaultValue="${moduleName}" />
+			</else>
+		</if>
+		<propertyregex property="repositoryName" input="${moduleName}" regexp="\..+" replace="" global="true" defaultValue="${moduleName}" />
+		<!-- echo message="brokenName set to ${brokenName}" / -->
+	</target>
+
+	<target name="CopyTLB" depends="-getBrokenName">
+		<propertyregex property="modulePath" input="${moduleName}" regexp="\." replace="/" global="true" defaultValue="${moduleName}" />
+		<propertyregex property="tlbFolder" input="${modulePath}" regexp="/(.*\/)?" replace="/Interfaces/" defaultValue="${modulePath}" />
+		<property name="tlbFullPath" value="${dependency.dir}/Include/${tlbFolder}/${compiler.version}/${brokenName}.tlb" />
+
+		<!-- TLB will not exist for library projects -->
+		<!--<echo message="Think file might be ${tlbFullPath}" />-->
+		<copy file="${tlbFullPath}" todir="${base.dir}/${compiler.version}" failonerror="false" overwrite="true" quiet="true" />
+	</target>
+
+	<!-- Legacy targets for existing projects - can be overridden in individual projects by defining
+  them before including this file - useful for setting custom msbuild properties etc - ->
+	<target name="build-debug" depends="build-debug" />
+  	<target name="build64" depends="build64" /> -->
+
+	<target name="identify-branch" depends="require-svn-info, -getBrokenName, load-ivy" unless="branch">
+		<!-- If you need to change this, make sure it works with the following types of inputs: 
+    * https://svn/svn/MyID_Development/Platform/BOLModules/trunk/Commands/BOL_Devices
+    * https://svn/svn/MyID_Development/Platform/BOLModules/branches/UnifiedEdeficeCommon/Commands/BOL_Devices
+    * https://svn/svn/MyID_Development/Platform/CardServer/trunk/PivDataProcessorLib
+    * https://svn/svn/MyID_Development/Platform/CardServer/branches/UnifiedEdeficeCommon/PivDataProcessorLib
+    * https://svn/svn/MyID_Development/Utilities/trunk/EdeficeCommon
+    * https://svn/svn/MyID_Development/Utilities/branches/UnifiedEdeficeCommon/EdeficeCommon/Projects
+    -->
+		<!--
+    <echo message="Inputs: moduleName=&quot;${moduleName}&quot;,
+      repositoryName=&quot;${repositoryName}&quot;,
+      brokenName=&quot;${brokenName}&quot;,
+      svnURL=&quot;${svnURL}&quot;" />
+      -->
+		<if>
+			<equals arg1="${moduleName}" arg2="ServerCore.SmartCardCOM" />
+			<then>
+				<propertyregex property="spacedFolderPath" input="${moduleName}" regexp="SmartCardCOM" replace="Smart%20Card%20COM" global="true" defaultValue="${moduleName}" />
+				<propertyregex property="folderPath" input="${spacedFolderPath}" regexp="${repositoryName}\." replace="" />
+			</then>
+			<else>
+				<propertyregex property="folderPath" input="${moduleName}" regexp="${repositoryName}\." replace="" />
+			</else>
+		</if>
+		<!-- echo message="Regex for folderPath found=&quot;${folderPath}&quot;" / -->
+		<if>
+			<isset property="folderPath" />
+			<then>
+				<propertyregex property="subFolder" input="${folderPath}" regexp="\.(?!net)" replace="\/" defaultValue="${folderPath}" casesensitive="false" />
+				<!--<echo message="Regex for subFolder found=&quot;${subFolder}&quot;" />-->
+				<property name="regex" value="${svn.repo.root}\/(Platform\/)?${repositoryName}\/(.+)\/${subFolder}" />
+				<property name="selectionIndex" value="2" />
+			</then>
+			<else>
+				<!-- Attempt to use organisation instead -->
+				<!-- This bit here is for Utilities etc -->
+				<ivy:info file="${base.dir}/ivy.xml" />
+				<propertyregex property="alternateRepo" input="${ivy.organisation}" regexp="myid\." replace="" />
+				<property name="regex" value="${svn.repo.root}\/${alternateRepo}\/(.+)\/${brokenName}" />
+				<property name="selectionIndex" value="1" />
+			</else>
+		</if>
+		<!-- <echo message="About to run regex: ${regex} on ${svnURL}" />-->
+		<propertyregex property="branch" input="${svnURL}" regexp="${regex}" select="\${selectionIndex}" casesensitive="false" />
+
+		<fail unless="branch" message="Cannot identify SVN branch in ${svnURL}" />
+		<echo message="Found branch = ${branch}" />
+	</target>
+
+	<macrodef name="moduleZipPlatform">
+		<attribute name="platform" />
+		<attribute name="dirPattern" />
+		<attribute name="compDir" />
+		<attribute name="zipSuffix" />
+		<attribute name="excludes" default="" />
+		<sequential>
+			<zip destfile="${ivy.zip.dir}/${moduleName}_@{platform}_@{zipSuffix}.zip" whenempty="${zip.whenempty}">
+				<zipfileset
+						dir="${zip.libs.dir}"
+						includes="@{compDir}/@{dirPattern}/*.lib
+						@{compDir}/@{dirPattern}/*.pdb
+						@{compDir}/@{dirPattern}/*.dll
+						@{compDir}/@{dirPattern}/*.exe"
+						excludes="@{excludes}" />
+			</zip>
+		</sequential>
+	</macrodef>
+
+	<target name="moduleZip" depends="AntContrib.import, identifyUnitTestExe" description="Create all ZIP files" >
+		<propertyregex property="zipPrefix" input="${moduleName}" regexp="\." replace="/" global="true" defaultValue="${moduleName}" />
+		<property name="zip.base.dir" value="${base.dir}" />
+		<property name="zip.headers.dir" value="${zip.base.dir}" />
+		<property name="zip.libs.dir" value="${zip.base.dir}"/>
+		<property name="zip.whenempty" value="skip" />
+
+		<moduleZipPlatform platform="win32" dirPattern="*_UM?" compDir="VC10" zipSuffix="vc10" excludes="**/Veracode_*/*" />
+		<moduleZipPlatform platform="win32" dirPattern="*_UM?" compDir="VC15" zipSuffix="vc15" excludes="**/Veracode_*/*" />
+		<moduleZipPlatform platform="win64" dirPattern="*_UM?64" compDir="VC10" zipSuffix="vc10" excludes="**/Veracode_*/*" />
+		<moduleZipPlatform platform="win64" dirPattern="*_UM?64" compDir="VC15" zipSuffix="vc15" excludes="**/Veracode_*/*" />
+		<moduleZipPlatform platform="win32_veracode" dirPattern="Veracode_UM?" compDir="VC10" zipSuffix="vc10"/>
+		<moduleZipPlatform platform="win32_veracode" dirPattern="Veracode_UM?" compDir="VC15" zipSuffix="vc15"/>
+		<moduleZipPlatform platform="win64_veracode" dirPattern="Veracode_UM?64" compDir="VC10" zipSuffix="vc10" />
+		<moduleZipPlatform platform="win64_veracode" dirPattern="Veracode_UM?64" compDir="VC15" zipSuffix="vc15" />
+
+		<zip destfile="${ivy.zip.dir}/${moduleName}_include.zip" whenempty="create">
+			<zipfileset
+					dir="${zip.headers.dir}"
+					includes="**/*.h ${zipAdditionalIncludes}"
+					excludes="**/StdAfx.h **/dependencies/** ${testFolder}/** ${zipAdditionalExcludes}"
+					prefix="${zipPrefix}"
+					/>
+		</zip>
+	</target>
+
+	<target name="-do-clean-module-internal" depends="identify-solution">
+		<echo>Running clean with compiler: ${compiler.version} ${Configuration} ${Platform}</echo>
+		<antcall target="msbuild">
+			<param name="vs.project.configuration" value="${Configuration}" />
+			<param name="vs.platform" value="${Platform}" />
+			<param name="vs.clean-first" value="1" />
+		</antcall>
+	</target>
+
+	<target name="-do-clean-module" depends="auto-resolve-first-time, AntContrib.import">
+		<fail unless="Configuration" />
+		<fail unless="Platform" />
+		<for-all-compilers>
+			<antcall target="-do-clean-module-internal" >
+				<param name="compiler.version" value="${compiler.version}" />
+			</antcall>
+		</for-all-compilers>
+	</target>
+	
+	<target name="clean-module32" description="Clean UML 32 bit" >
+		<antcall target="-do-clean-module">
+			<param name="Configuration" value="Release_UML" />
+			<param name="Platform" value="Win32" />
+		</antcall>
+		<antcall target="-do-clean-module">
+			<param name="Configuration" value="Debug_UML" />
+			<param name="Platform" value="Win32" />
+		</antcall>
+		<antcall target="-do-clean-module">
+			<param name="Configuration" value="Veracode_UML" />
+			<param name="Platform" value="Win32" />
+		</antcall>
+	</target>
+	
+	<target name="clean-module64" description="Clean UML 64 bit" >
+		<antcall target="-do-clean-module">
+			<param name="Configuration" value="Release_UML" />
+			<param name="Platform" value="x64" />
+		</antcall>
+		<antcall target="-do-clean-module">
+			<param name="Configuration" value="Debug_UML" />
+			<param name="Platform" value="x64" />
+		</antcall>
+		<antcall target="-do-clean-module">
+			<param name="Configuration" value="Veracode_UML" />
+			<param name="Platform" value="x64" />
+		</antcall>
+	</target>
+	
+	<target name="clean-module32.UMD" description="Clean UMD 32 bit" >
+		<antcall target="-do-clean-module">
+			<param name="Configuration" value="Release_UMD" />
+			<param name="Platform" value="Win32" />
+		</antcall>
+		<antcall target="-do-clean-module">
+			<param name="Configuration" value="Debug_UMD" />
+			<param name="Platform" value="Win32" />
+		</antcall>
+		<antcall target="-do-clean-module">
+			<param name="Configuration" value="Veracode_UMD" />
+			<param name="Platform" value="Win32" />
+		</antcall>
+	</target>
+	
+	<target name="clean-module64.UMD" description="Clean UMD 64 bit" >
+		<antcall target="-do-clean-module">
+			<param name="Configuration" value="Release_UMD" />
+			<param name="Platform" value="x64" />
+		</antcall>
+		<antcall target="-do-clean-module">
+			<param name="Configuration" value="Debug_UMD" />
+			<param name="Platform" value="x64" />
+		</antcall>
+		<antcall target="-do-clean-module">
+			<param name="Configuration" value="Veracode_UMD" />
+			<param name="Platform" value="x64" />
+		</antcall>
+	</target>
+
+	<target name="clean-module" description="Clean UML 32,64 bit" >
+		<antcall target="clean-module32" />
+		<antcall target="clean-module64" />
+		<antcall target="clean_deps" />
+	</target>
+
+	<!-- Each platform repository has a "Version" sub-folder which many projects
+  require to be checked out when building as they use the common
+  rc2 files (etc) in it. -->
+	<target name="get-version" depends="identify-branch">
+		<!--<property name="branch" value="trunk" />-->
+		<!-- propertyregex command is in a different jar file -->
+		<!--<taskdef resource="net/sf/antcontrib/antcontrib.properties" classpath="${ivy.lib.dir}/ant-contrib-0.6.jar" />-->
+		<!-- The moduleName will probably have a dot in it, remove it and everything after it -->
+		<propertyregex property="moduleSection" input="${moduleName}" regexp="\..+" replace="" global="true" defaultValue="${moduleName}" />
+		<property name="versionPath" value="Version" />
+
+		<!-- If env.WORKSPACE is set use that, otherwise fall back on base.dir -->
+		<condition property="workspace" value="${env.WORKSPACE}" else="${base.dir}">
+			<isset property="env.WORKSPACE"/>
+		</condition>
+
+		<antcall target="checkout">
+			<param name="checkout.url" value="Platform/${moduleSection}/${branch}/${versionPath}" />
+			<param name="checkout.destination" value="${workspace}\${moduleSection}\${versionPath}" />
+		</antcall>
+	</target>
+
+	<target name="generate-registrationless-com-manifest-for-tests">
+		<!-- Note: it is not currently possible to parameterise out the Manifest-generating msbuild script
+    because at present the msbuild task that we have in Ant only allows you to define one property
+    and the script needs three. -->
+		<fail unless="Manifest.msbuild.xml" />
+		<fail unless="Target.executable" />
+		<fail unless="Intermediate.manifest" />
+
+		<antcall target="msbuild">
+			<param name="vs.solution.path" value="${Manifest.msbuild.xml}" />
+		</antcall>
+
+		<!-- The Mt target in msbuild doesn't appear until v2012, so we have to
+    run exec here.  Are we running on 32 or 64 bit OS? -->
+		<condition property="mt.exe" value="C:\Program Files (x86)\Microsoft SDKs\Windows\v7.0A\Bin\mt.exe" else="C:\Program Files\Microsoft SDKs\Windows\v7.0A\Bin\mt.exe">
+			<available type="file" file="C:\Program Files (x86)\Microsoft SDKs\Windows\v7.0A\Bin\mt.exe" />
+		</condition>
+
+		<echo message="Embedding new manifest..." />
+		<exec executable="${mt.exe}">
+			<arg value="-inputresource:${Target.executable}" />
+			<arg value="-manifest" />
+			<arg value="${Intermediate.manifest}" />
+			<arg value="-outputresource:${Target.executable}" />
+		</exec>
+	</target>
+
+	<target name="make-version" depends="prepare-publish-snapshot-without-credentials, ivy-new-version, AntContrib.import">
+		<property name="version.filename" value="version.h" />
+		<propertyregex property="file.version" input="${ivy.new.revision}" regexp="\." replace="," />
+		<echo file="${version.filename}">#define FILE_VERSION ${file.version} ${line.separator}</echo>
+	</target>
+
+	<target name="identify-vs-version" depends="AntContrib.import">
+		<property name="compiler.version" value="${current.default.compiler.version}" />
+		<echo>Compiler Version: ${compiler.version}</echo>
+		<switch value="${compiler.version}" caseinsensitive="true" >
+			<case value="VC10">
+				<property name="vs.version.suffix" value="2010" />
+			</case>
+			<case value="VC14">
+				<property name="vs.version.suffix" value="2015" />
+			</case>
+			<case value="VC15">
+				<property name="vs.version.suffix" value="2017" />
+			</case>
+			<default>
+				<fail message="compiler.version '${compiler.version}' is unknown." />
+			</default>
+		</switch>
+	</target>
+
+	<target name="identify-solution" depends="AntContrib.import, identify-vs-version" unless="vs.solution.path">
+		<propertyregex property="module.sln" input="${moduleName}" regexp=".+\." replace="" defaultValue="${moduleName}" />
+		<property name="module.sln.filetype" value="sln" />
+
+		<var name="solution.name" value="${module.sln}${vs.version.suffix}.${module.sln.filetype}" />
+		<echo message="Trying ${solution.name}..." />
+
+		<if>
+			<available file="${solution.name}" />
+			<then>
+				<property name="vs.solution.path" value="${solution.name}" />
+			</then>
+			<else>
+				<var name="solution.name" value="${module.sln}${vs.version.suffix}.${module.sln.filetype}" />
+				<echo message="Trying ${solution.name}..." />
+				<if>
+					<available file="${solution.name}" />
+					<then>
+						<property name="vs.solution.path" value="${solution.name}" />
+					</then>
+				</if>
+			</else>
+		</if>
+
+		<fail unless="vs.solution.path" message="Cannot work out what the solution file name is" />
+		<echo message="Using: ${vs.solution.path}" />
+	</target>
+
+	<target name="identifyUnitTestExe" depends="identify-vs-version, -getBrokenName">
+		<!-- The docs for OpenCPPCoverage mention that release builds do not run reliably. -->
+		<property name="buildConfiguration" value="Debug_UML" />
+
+		<var name="testName" value="${brokenName}.Tests" />
+		<var name="testFolder" value="${testName}" />
+
+		<!-- Ant doesn't appear to have the ability to "lazily" evaluate a property
+    so we have to copy and paste this line everytime we change one of the inputs;
+    maybe it could be turned into a loop or something? -->
+		<var name="unitTestExeName" value="${base.dir}/${testFolder}/${compiler.version}/${buildConfiguration}/${testName}.exe" />
+
+		<if>
+			<not>
+				<available file="${unitTestExeName}" />
+			</not>
+			<then>
+				<var name="testFolder" value="UnitTest" />
+				<var name="unitTestExeName" value="${base.dir}/${testFolder}/${compiler.version}/${buildConfiguration}/${testName}.exe" />
+			</then>
+		</if>
+		<if>
+			<not>
+				<available file="${unitTestExeName}" />
+			</not>
+			<then>
+				<var name="testName" value="${brokenName}Test" />
+				<var name="unitTestExeName" value="${base.dir}/${testFolder}/${compiler.version}/${buildConfiguration}/${testName}.exe" />
+			</then>
+		</if>
+		<if>
+			<not>
+				<available file="${unitTestExeName}" />
+			</not>
+			<then>
+				<var name="testFolder" value="Tests" />
+				<var name="testName" value="${brokenName}.Tests" />
+				<var name="unitTestExeName" value="${base.dir}/${testFolder}/${compiler.version}/${buildConfiguration}/${testName}.exe" />
+			</then>
+		</if>
+		<if>
+			<not>
+				<available file="${unitTestExeName}" />
+			</not>
+			<then>
+				<var name="testName" value="${brokenName}Test" />
+				<var name="unitTestExeName" value="${base.dir}/${testFolder}/${compiler.version}/${buildConfiguration}/${testName}.exe" />
+			</then>
+		</if>
+
+		<!-- Last one - if we are called with parameters, try those.
+    Because we're using var not property, the caller can't override them using
+    "param", we have to use a different name. -->
+		<if>
+			<not>
+				<available file="${unitTestExeName}" />
+			</not>
+			<then>
+				<var name="testName" value="${overrideTestName}" />
+				<var name="testFolder" value="${overrideTestFolder}" />
+				<var name="unitTestExeName" value="${base.dir}/${testFolder}/${compiler.version}/${buildConfiguration}/${testName}.exe" />
+			</then>
+		</if>
+
+		<available file="${testFolder}" type="dir" property="foundTestFolder" />
+		<available file="${unitTestExeName}" property="foundUnitTestExe" />
+		<echo unless:set="foundUnitTestExe" message="Unable to work out what the unit test executable is" />
+	</target>
+	
+	<target name="cppcheck" depends="identifyUnitTestExe" description="Run static analysis" >
+		<mkdir dir="${base.dir}/TestResults"/>
+
+		<antcall target="analyse-cppcheck">
+			<param name="analyse.dir" value="${base.dir}" />
+			<param name="analyse.result" value="TestResults/${moduleName}.cppcheck.xml" />
+			<param name="analyse.preprocessor.definitions" value="_UNICODE" />
+			<param name="cppcheck.ignoreTest" value="${testFolder}" if:set="foundTestFolder" />
+		</antcall>
+	</target>
+
+	<target name="opencppcoverage" depends="identifyUnitTestExe" description="Run code coverage">
+		<mkdir dir="${base.dir}/TestResults"/>
+
+		<antcall target="analyse-opencppcoverage" if:set="foundUnitTestExe">
+			<param name="analyse.exe" value="${unitTestExeName}" />
+			<param name="analyse.excluded.sources" value="${testFolder}" if:set="foundTestFolder" />
+		</antcall>
+	</target>
+
+	<scriptdef language="javascript" name="lower">
+		<attribute name="string" /> 
+		<attribute name="to" />
+		project.setProperty(attributes.get("to"),attributes.get("string").toLowerCase());
+	</scriptdef>
+
+
+</project>

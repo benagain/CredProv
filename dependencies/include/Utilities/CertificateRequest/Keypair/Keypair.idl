@@ -1,0 +1,97 @@
+import "oaidl.idl";
+import "ocidl.idl";
+
+// IKeypair interface
+	[
+		object,
+		uuid(93D522A3-82A4-4514-832E-0BA04AE7616E),
+		dual,
+		helpstring("IKeypair Interface"),
+		pointer_default(unique)
+	]
+	interface IKeypair : IDispatch
+	{
+		[id(1), helpstring("method Generate")] HRESULT Generate([in] BSTR bstrXMLInput, [out, retval] BSTR *bstrXMLOutput);
+		[id(2), helpstring("method Sign")] HRESULT Sign([in] BSTR bstrXMLInput, [out, retval] BSTR *bstrOutput);
+		[id(3), helpstring("method AcceptCertificate")] HRESULT AcceptCertificate([in] BSTR bstrXMLInput, [out, retval] BSTR *bstrXMLOutput);
+	};
+
+// IDHProtectedKeyExchange
+	[
+		object,
+		uuid(6BEAB129-AC68-4d26-8D7C-EBFD756D15FE),
+		dual,
+		helpstring("IDHProtectedKeyExchange Interface"),
+		pointer_default(unique)
+	]
+	interface IDHProtectedKeyExchange : IDispatch
+	{
+		[id(1), helpstring("method DHGenerateMasterKey")] HRESULT DHGenerateMasterKey([in] BSTR bstrXMLInput, [out, retval] BSTR *bstrXMLOutput);
+		// note DHDeriveTransportKey is integrated into the DHExport/DHImport steps
+		//[id(2), helpstring("method DHDeriveTransportKey")] HRESULT DHDeriveTransportKey([in] BSTR bstrXMLInput);
+		[id(2), helpstring("method DHExport")] HRESULT DHExport([in] BSTR bstrXMLInput, [out, retval] BSTR *bstrXMLOutput);
+		[id(3), helpstring("method DHImport")] HRESULT DHImport([in] BSTR bstrXMLInput);
+	};
+
+// IClientRSAProtectedKeyExchange
+// ClientRSA refers to the use of an RSA private encryption key on the client being used to 
+// secure the transport of a keypair from server to client
+	[
+		object,
+		uuid(6D16CE64-AF65-459a-A868-9156279E43CD),
+		dual,
+		helpstring("IClientRSAProtectedKeyExchange Interface"),
+		pointer_default(unique)
+	]
+	interface IClientRSAProtectedKeyExchange : IDispatch
+	{
+		[id(1), helpstring("method ClientRSAExport")] HRESULT ClientRSAExport([in] BSTR bstrXMLInput, [out, retval] BSTR *bstrXMLOutput);
+		[id(2), helpstring("method ClientRSAImport")] HRESULT ClientRSAImport([in] BSTR bstrXMLInput, [out, retval] BSTR *bstrXMLOutput);
+	};
+
+// IServerRSAProtectedKeyExchange
+// ServerRSA refers to the use of an RSA private encryption key on the server being used to 
+// secure the transport of a keypair from server to client
+// This interface is not yet defined
+
+
+// now an external DLL can contain COM objects that implement IKeypair, plus
+// optionally one or more key-exchange interfaces depending on the functionality
+// of the particular component
+
+	// The ICertificateEnroll is an interface that creates certificate requests
+	// different objects can implement this interface to create cert-requests 
+	// tailored to specific purposes
+	[
+		object,
+		uuid(5ADA3784-8124-4D22-B89E-FB395DB263FC),
+		dual,
+		helpstring("ICertificateEnroll Interface"),
+		pointer_default(unique)
+	]
+	interface ICertificateEnroll : IDispatch
+	{
+		[id(1), helpstring("method CreateRequest")] HRESULT CreateRequest([in] BSTR bstrXMLIn, [out, retval] BSTR *bstrXMLOut);
+	};
+
+[
+	uuid(CC5AC50E-5814-4b0e-BB14-70E853B0BEAB),
+	version(1.0),
+	helpstring("Keypair 1.0 Type Library")
+]
+library KEYPAIRLib
+{
+	importlib("stdole32.tlb");
+	importlib("stdole2.tlb");
+
+	interface ICertificateEnroll;
+
+	// declared within a KEYPAIRLib section so importing this tlb will produce 
+	// KEYPAIRLib::IKeypairPtr class. This can then be used as a PureAbstractBaseClass pointer
+	// onto which any object implementing this intercace may be instantiated.
+	interface IKeypair;
+
+	interface IDHProtectedKeyExchange;
+
+	interface IClientRSAProtectedKeyExchange;	
+};

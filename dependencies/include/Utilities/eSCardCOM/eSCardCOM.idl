@@ -1,0 +1,197 @@
+// eSCardCOM.idl : IDL source for eSCardCOM.dll
+//
+
+// This file will be processed by the MIDL tool to
+// produce the type library (eSCardCOM.tlb) and marshalling code.
+
+import "oaidl.idl";
+import "ocidl.idl";
+
+#include "ScriptConstructor.idl"
+
+typedef [public] BYTE *LPBYTE;
+
+typedef [helpstring("SCard Share Modes"),
+			//uuid(),
+			//helpcontext(),
+			v1_enum,   // force 32-bit transmission over RPC, if in use...
+			version(1.0)]
+enum tagSCARD_SHARE_MODES {
+	EXCLUSIVE = 1,
+	SHARED = 2
+	} SCARD_SHARE_MODES;
+
+typedef [helpstring("SCard Dispositions"),
+			//uuid(),
+			//helpcontext(),
+			v1_enum,   // force 32-bit transmission over RPC, if in use...
+			version(1.0)]
+enum tagSCARD_DISPOSITIONS {
+	LEAVE = 0,
+	RESET = 1,
+	UNPOWER = 2,
+	EJECT = 3
+	} SCARD_DISPOSITIONS;
+
+typedef [helpstring("SCard Protocols"),
+			//uuid(),
+			//helpcontext(),
+			v1_enum,   // force 32-bit transmission over RPC, if in use...
+			version(1.0)]
+enum tagSCARD_PROTOCOLS {
+	T0 = 0x01,  // T=0 is the active protocol.
+	T1 = 0x02,  // T=1 is the active protocol.
+	T0T1 = 0x03,// Both T0 and T1 are possible, effectively the protocol is unknown.
+	RAW = 0xff  // Raw is the active protocol.
+	} SCARD_PROTOCOLS;
+
+	[
+		object,
+		uuid(0594531D-E44E-4ed0-BB31-9A928D52304D),
+		dual,
+		helpstring("IByteBuffer Interface"),
+		pointer_default(unique)
+	]
+	interface IByteBuffer : IDispatch
+	{
+		typedef [unique] IByteBuffer* LPBYTEBUFFER;
+
+		[id(1), helpstring("Initialize the buffer for use")]						HRESULT Initialize([in] LONG lSize, [in] BYTE* pData);
+		[id(2), helpstring("Read the specified number of bytes from the buffer")]	HRESULT Read([out] BYTE* pByte, [in] LONG cb, [out] LONG* pcbRead);
+		[id(3), helpstring("Write a specified number of bytes to the buffer")]		HRESULT Write([in] BYTE* pByte, [in] LONG cb, [out] LONG* pcbWritten);
+
+		[id(4), helpstring("Initialize the buffer with Hex String")]				HRESULT InitializeHex([in] BSTR bstrDataHex);
+		[id(5), helpstring("Read data as Hex String")]								HRESULT ReadHex([out, retval] BSTR* pbstrDataHex);
+
+		[id(6), helpstring("Read the specified number of bytes from the offset into the buffer")]
+																					HRESULT ReadWithOffSet([out] BYTE * pByte, [in] LONG offset, [in] LONG cb, [out] LONG* pcbRead);
+	};
+
+	[
+		object,
+		uuid(E004BD57-8EB7-4416-AEA3-379755E04D2D),
+		dual,
+		helpstring("ISCardCmd Interface"),
+		pointer_default(unique)
+	]
+	interface ISCardCmd : IDispatch
+	{
+		typedef [unique] ISCardCmd *LPSCARDCMD;
+		
+		[id(1), helpstring("Build a valid APDU command")]					HRESULT BuildCmd([in] BYTE byClassId, [in] BYTE byInsId, [in] BYTE byP1, [in] BYTE byP2, [in] LPBYTEBUFFER pbyData, [in] LONG* pLe);
+		[id(2), helpstring("Retrieve the Class ID")]						HRESULT GetClassId([out,retval] BYTE* pbyClass);
+		[id(3), helpstring("Set the Class ID")]								HRESULT PutClassId([in] BYTE byClass);
+		[id(4), helpstring("Set the Alternate Class ID")]					HRESULT PutAlternateClassId([in] BYTE byClass);
+		[id(5), helpstring("Retrieve the Alternate Class ID")]				HRESULT GetAlternateClassId([out,retval] BYTE* pbyClass);
+		[id(6), helpstring("Retrieve the Instruction ID")]					HRESULT GetInstructionId([out,retval] BYTE* pbyIns);
+		[id(7), helpstring("Retrieve Parameter 1")]							HRESULT GetP1([out,retval] BYTE* pbyP1);
+		[id(8), helpstring("Retrieve Parameter 2")]							HRESULT GetP2([out,retval] BYTE* pbyP2);
+		[id(9), helpstring("Retrieve Parameter 3")]							HRESULT GetP3([out,retval] BYTE* pbyP3);
+		[id(10), helpstring("Retrieve Le field")]							HRESULT GetLe([out,retval] LONG* plSize);
+		[id(11), helpstring("Set the Data field")]							HRESULT PutData([in] LPBYTEBUFFER pData);
+		[id(12), helpstring("Retrieve the Data field")]						HRESULT GetData([out] LPBYTEBUFFER* ppData);
+		[id(13), helpstring("Set the reply")]								HRESULT PutApduReply([in] LPBYTEBUFFER pReplyApdu);
+		[id(14), helpstring("Retrieve the size of the reply")]				HRESULT GetApduReplyLength([out,retval] LONG* plSize);
+		[id(15), helpstring("Retrieve the reply")]							HRESULT GetApduReply([out] LPBYTEBUFFER* ppReplyApdu);
+		[id(16), helpstring("Retrieve the reply status")]					HRESULT GetReplyStatus([out,retval] LPWORD pwStatus);
+		[id(17), helpstring("Retrieve the reply SW1 byte")]					HRESULT GetReplyStatusSW1([out,retval] BYTE* pbySW1);
+		[id(18), helpstring("Retrieve the reply SW2 byte")]					HRESULT GetReplyStatusSW2([out,retval] BYTE* pbySW2);
+		[id(19), helpstring("Retrieve the length of the raw APDU command")]	HRESULT GetApduLength([out,retval] LONG* plSize);
+		[id(20), helpstring("Retrieve the raw APDU command")]				HRESULT GetApdu([out,retval] LPBYTEBUFFER* ppApdu);
+		[id(21), helpstring("Sets a new APDU reply status word")]			HRESULT PutReplyStatus([in] WORD Status);
+		[id(22), helpstring("Sets the APDU wrapped by this interface")]		HRESULT PutApdu([in] LPBYTEBUFFER pApdu);
+		[id(23), helpstring("Sets the Instruction Identifier")]				HRESULT PutInstructionId([in] BYTE byIns);
+		[id(24), helpstring("Sets the first parameter byte")]				HRESULT PutP1([in] BYTE byP1);
+		[id(25), helpstring("Sets the second parameter byte")]				HRESULT PutP2([in] BYTE byP2);
+
+		///  versions of GetData and GetApduReply which have retval instead of just out parameters, to make them easier to use.
+		[id(26), helpstring("Retrieve the Data field")]						HRESULT ReturnData([out, retval] LPBYTEBUFFER* ppData);
+		[id(27), helpstring("Retrieve the reply")]							HRESULT ReturnApduReply([out, retval] LPBYTEBUFFER* ppReplyApdu);
+
+		/// additional functions for GP scripting support (use GPScriptingObjects.ByteStrings, and Script compatible parameter types)
+		[id(28), helpstring("Build APDU command based on ByteString")]		HRESULT BuildCmd2([in] BYTE byClassId, [in] BYTE byInsId, [in] BYTE byP1, [in] BYTE byP2, [in] IDispatch *pByteString, [in] LONG pLe);
+		[id(29), helpstring("Set the Data field using ByteString")]			HRESULT PutData2([in] IDispatch *pByteStringData);
+		[id(30), helpstring("Retrieve the Data field as ByteString")]		HRESULT GetData2([out, retval] IDispatch ** ppByteStringData);
+		[id(31), helpstring("Set the reply+SW using ByteString")]			HRESULT PutApduReply2([in] IDispatch *pByteStringReplyApdu);
+		[id(32), helpstring("Retrieve the reply+SW as a ByteString")]		HRESULT GetApduReply2([out, retval] IDispatch** ppByteStringReplyApdu);
+
+		/// DescriptionXML allows allows additional metadata to be embedded in the command. This can allow for more intelligent processing of commands
+		[id(33), helpstring("Gets the Description XML")]					HRESULT GetDescriptionXML([out, retval] BSTR *pbstrDescriptionXML);
+		[id(34), helpstring("Sets the Description XML")]					HRESULT PutDescriptionXML([in] BSTR bstrDescriptionXML);
+
+		/// retrieve Apdu reply, ignoring statusword
+		[id(35), helpstring("Retrieve the reply data as a ByteString")]		HRESULT GetApduReplyData2([out, retval] IDispatch** ppByteStringReplyData);
+		[id(36), helpstring("Retrieve the raw APDU command as a ByteString")]	HRESULT GetApdu2([out, retval] IDispatch ** ppByteStringData);
+	};
+
+	[
+		object,
+		uuid(9B0B8988-6E95-4515-AE65-67C14933D67F),
+		dual,
+		helpstring("ISCardCmd2 Interface"),
+		pointer_default(unique)
+	]
+	interface ISCardCmd2 : ISCardCmd
+	{
+		/// additional functions introduced to support G&D PIV SCE 7.0 cards
+		[id(37), helpstring("Build APDU command without Le Byte")]		HRESULT BuildCmd3([in] BYTE byClassId, [in] BYTE byInsId, [in] BYTE byP1, [in] BYTE byP2, [in] LPBYTEBUFFER pbyData, [in] LONG* pLe, [in] BOOL bLeNull);
+	};
+
+	[
+		object,
+		uuid(31D700C5-104E-4632-8042-B23B7F01764A),
+		dual,
+		helpstring("ISCard Interface"),
+		pointer_default(unique)
+	]
+	interface ISCard : IDispatch
+	{
+		typedef [public] ULONG_PTR HSCARD;
+
+		[id(1), helpstring("Open card in the specified reader")]					HRESULT AttachByReader([in] BSTR bstrReaderName, [in] SCARD_SHARE_MODES ShareMode, [in] SCARD_PROTOCOLS PrefProtocol);
+		[id(2), helpstring("Send a command to the card")]							HRESULT Transaction([in, out] LPSCARDCMD* ppCmd);
+		[id(3), helpstring("Claims exclusive access to the smart card")]			HRESULT LockSCard();
+		[id(4), helpstring("Reset the card")]										HRESULT ReAttach([in] SCARD_SHARE_MODES ShareMode, [in] SCARD_DISPOSITIONS InitState);
+		[id(5), helpstring("Releases exclusive access to the smart card")]			HRESULT UnlockSCard([in] SCARD_DISPOSITIONS Disposition);
+		[id(6), helpstring("Attaches to an open and configured smart card handle")]	HRESULT AttachByHandle([in] HSCARD hCard);
+	};
+
+[
+	uuid(29586030-FAC2-4803-A185-B85B33A165C2),
+	version(1.0),
+	helpstring("eSCardCOM 1.0 Type Library")
+]
+library ESCARDCOMLib
+{
+	importlib("stdole32.tlb");
+	importlib("stdole2.tlb");
+
+	[
+		uuid(8E444EC7-5935-49f8-B386-1343C1BFD4CF),
+		helpstring("ByteBuffer Class")
+	]
+	coclass ByteBuffer
+	{
+		[default] interface IByteBuffer;
+	};
+
+	[
+		uuid(D7083CF0-B6F1-4653-B98C-9397457BC49D),
+		helpstring("SCardCmd Class")
+	]
+	coclass SCardCmd
+	{
+		[default] interface ISCardCmd;
+		interface ISCardCmd2;
+		//IScriptConstructor
+	};
+
+	[
+		uuid(D2759D85-9FD0-4bcd-933C-4FFA203EE6C6),
+		helpstring("SCard Class")
+	]
+	coclass SCard
+	{
+		[default] interface ISCard;
+	};
+};

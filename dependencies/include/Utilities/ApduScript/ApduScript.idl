@@ -1,0 +1,58 @@
+// ApduScript.idl : IDL source for ApduScript.dll
+//
+
+// This file will be processed by the MIDL tool to
+// produce the type library (ApduScript.tlb) and marshalling code.
+
+import "oaidl.idl";
+import "ocidl.idl";
+
+import "APDUCard.idl";
+
+[
+	object,
+	uuid(42F54340-85AC-4E89-BBA5-3F6A5A224595),
+	dual,
+	helpstring("IApduScripter Interface"),
+	pointer_default(unique)
+]
+interface IApduScripter : IDispatch
+{
+		
+	[id(1), helpstring("method Clear")] HRESULT Clear();
+	[propget, id(2), helpstring("property Script")] HRESULT Script([out, retval] BSTR *pVal);
+	[propput, id(2), helpstring("property Script")] HRESULT Script([in] BSTR newVal);
+	[id(3), helpstring("method AppendCommand")] HRESULT AppendCommand([in] ISCardCmd *pCommand);
+	[id(4), helpstring("method GetNextCommand")] HRESULT GetNextCommand([in] ISCardCmd *pResultsOfPreviousCommand, [out] ISCardCmd **ppNextCommand, [out, retval] short *MoreCommandsInScript);
+};
+
+[
+	uuid(6655E3BF-6506-472E-B296-6AD1B9D6B50C),
+	version(1.0),
+	helpstring("ApduScript 1.0 Type Library")
+]
+library APDUSCRIPTLib
+{
+	importlib("stdole32.tlb");
+	importlib("stdole2.tlb");
+	
+	interface ISCardCmd2;
+
+	[
+		uuid(68E878A7-8AF0-433A-A5FF-3AC9D2A2E602),
+		helpstring("ApduScripter Class")
+	]
+	coclass ApduScripter
+	{
+		[default] interface IApduScripter;
+	};
+
+	[
+		uuid(BC574BBC-CB65-4ede-999F-51A4DF4B4B4D),
+		helpstring("APDUScriptProcessor Class")
+	]
+	coclass APDUScriptProcessor
+	{
+		[default] interface IAPDUProcessor;
+	};
+};

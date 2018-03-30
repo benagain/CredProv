@@ -1,0 +1,221 @@
+/// \file Envelope COM.idl
+/// IDL source for Envelope COM.dll
+///
+/// This file will be processed by the MIDL tool to
+/// produce the type library (Envelope COM.tlb) and marshalling code.
+
+import "oaidl.idl";
+import "ocidl.idl";
+#include "CryptoProvider.idl"
+#include "CryptoManager.idl"
+
+[
+	object,
+	uuid(9952091F-1CF0-4BBF-BFAF-3BD07F6067FE),
+	dual,
+	helpstring("IEnvelope Interface, deprecated"),
+	pointer_default(unique)
+]
+interface IEnvelope : IDispatch
+{
+	[id(1), helpstring("method Sign")] HRESULT Sign([in] BSTR bstrDataIn, [in] IUnknown * pUnk, [in] BSTR bstrKeyName, [in] BSTR bstrSN, [out, retval] BSTR * bstrEnvelope);
+	[id(2), helpstring("method Encrypt")] HRESULT Encrypt([in] BSTR bstrDataIn, [in] IUnknown * pUnk, [in] BSTR bstrKeyName, [in] BSTR bstrSN, [out, retval] BSTR * bstrEnvelope);
+	[id(3), helpstring("method SignEncrypt")] HRESULT SignEncrypt([in] BSTR bstrDataIn, [in] IUnknown * pUnkSigner, [in] BSTR bstrSignKeyName, [in] IUnknown * pUnkEncryptor, [in] BSTR bstrEncryptKeyName, [in] BSTR bstrSN, [out, retval] BSTR * bstrEnvelope);
+	[id(4), helpstring("method Verify")] HRESULT Verify([in] BSTR bstrEnvelope, [in] IUnknown * pUnk, [in] BSTR bstrKeyName, [in] BSTR bstrSN, [out, retval] BSTR * bstrDataOut);
+	[id(5), helpstring("method Decrypt")] HRESULT Decrypt([in] BSTR bstrEnvelope, [in] IUnknown * pUnk, [in] BSTR bstrKeyName, [in] BSTR bstrSN, [out, retval] BSTR * bstrDataOut);
+	[id(6), helpstring("method DecryptVerify")] HRESULT DecryptVerify([in] BSTR bstrEnvelope, [in] IUnknown * pUnkVerifier, [in] BSTR bstrSignKeyName, [in] IUnknown * pUnkDecryptor, [in] BSTR bstrEncryptKeyName, [in] BSTR bstrSN, [out, retval] BSTR * bstrDataOut);
+	[id(7), helpstring("method Clear")] HRESULT Clear([in] BSTR bstrDataIn, [out, retval] BSTR * bstrEnvelope);
+	[id(8), helpstring("method UnEnvelope")] HRESULT UnEnvelope([in] BSTR bstrEnvelope, [out, retval] BSTR * bstrDataOut);
+};
+
+[
+	object,
+	uuid(2FE85BB7-8FA6-4FCA-AFAC-2932D7FBA411),
+	dual,
+	helpstring("IEnvelope2 Interface"),
+	pointer_default(unique)
+]
+interface IEnvelope2 : IDispatch
+{
+	[id(1), helpstring("method Sign")] HRESULT Sign([in] BSTR bstrDataIn, [in] IUnknown * pUnk, [in] BSTR bstrKeyName, [in] BSTR bstrSN, [in] BSTR bstrDeviceType, [out, retval] BSTR * bstrEnvelope);
+	[id(2), helpstring("method Encrypt")] HRESULT Encrypt([in] BSTR bstrDataIn, [in] IUnknown * pUnk, [in] BSTR bstrKeyName, [in] BSTR bstrSN, [in] BSTR bstrDeviceType, [out, retval] BSTR * bstrEnvelope);
+	[id(3), helpstring("method SignEncrypt")] HRESULT SignEncrypt([in] BSTR bstrDataIn, [in] IUnknown * pUnkSigner, [in] BSTR bstrSignKeyName, [in] IUnknown * pUnkEncryptor, [in] BSTR bstrEncryptKeyName, [in] BSTR bstrSN, [in] BSTR bstrDeviceType, [out, retval] BSTR * bstrEnvelope);
+	[id(4), helpstring("method Verify")] HRESULT Verify([in] BSTR bstrEnvelope, [in] IUnknown * pUnk, [in] BSTR bstrKeyName, [in] BSTR bstrSN, [out, retval] BSTR * bstrDataOut);
+	[id(5), helpstring("method Decrypt")] HRESULT Decrypt([in] BSTR bstrEnvelope, [in] IUnknown * pUnk, [in] BSTR bstrKeyName, [in] BSTR bstrSN, [out, retval] BSTR * bstrDataOut);
+	[id(6), helpstring("method DecryptVerify")] HRESULT DecryptVerify([in] BSTR bstrEnvelope, [in] IUnknown * pUnkVerifier, [in] BSTR bstrSignKeyName, [in] IUnknown * pUnkDecryptor, [in] BSTR bstrEncryptKeyName, [in] BSTR bstrSN, [out, retval] BSTR * bstrDataOut);
+	[id(7), helpstring("method Clear")] HRESULT Clear([in] BSTR bstrDataIn, [in] BSTR bstrSN, [in] BSTR bstrDeviceType, [out, retval] BSTR * bstrEnvelope);
+	[id(8), helpstring("method UnEnvelope")] HRESULT UnEnvelope([in] BSTR bstrEnvelope, [out, retval] BSTR * bstrDataOut);
+	[id(9), helpstring("method SignEx")] HRESULT SignEx([in] BSTR bstrDataIn, [in] BSTR xmlIn, [in] IUnknown * pUnk, [out, retval] BSTR *bstrEnvelope);
+	[id(10), helpstring("method DecryptEx")] HRESULT DecryptEx([in] BSTR bstrEnvelope, [in] IUnknown * pUnk, [in] BSTR xmlIn, [out, retval] BSTR * bstrDataOut);
+	[id(11), helpstring("method DecryptVerifyEx")] HRESULT DecryptVerifyEx([in] BSTR bstrEnvelope, [in] BSTR xmlIn, [in] IUnknown * pUnkVerifier, [in] IUnknown * pUnkDecryptor, [out, retval] BSTR * bstrDataOut);
+	[id(12), helpstring("method SignEncryptEx")] HRESULT SignEncryptEx([in] BSTR bstrDataIn, [in] BSTR xmlIn, [in] IUnknown * pUnkSigner, [in] IUnknown * pUnkEncryptor, [out, retval] BSTR * bstrEnvelope);
+	[id(13), helpstring("method SignID")] HRESULT SignID([in] const BSTR bstrDataIn, [in] IUnknown * pUnk, [in] const BSTR bstrKeyName, [in] const BSTR bstrSN, [in] const BSTR bstrDeviceType, [in] const BSTR bstrSessionID, [out, retval] BSTR * bstrEnvelope);
+	[id(14), helpstring("method EncryptID")] HRESULT EncryptID([in] const BSTR bstrDataIn, [in] IUnknown * pUnk, [in] const BSTR bstrKeyName, [in] const BSTR bstrSN, [in] const BSTR bstrDeviceType, [in] const BSTR bstrSessionID, [out, retval] BSTR * bstrEnvelope);
+	[id(15), helpstring("method SignEncryptID")] HRESULT SignEncryptID([in] const BSTR bstrDataIn, [in] IUnknown * pUnkSigner, [in] const BSTR bstrSignKeyName, [in] IUnknown * pUnkEncryptor, [in] const BSTR bstrEncryptKeyName, [in] const BSTR bstrSN, [in] const BSTR bstrDeviceType, [in] const BSTR bstrSessionID, [out, retval] BSTR * bstrEnvelope);
+	[id(16), helpstring("method ClearID")] HRESULT ClearID([in] const BSTR bstrDataIn, [in] const BSTR bstrSN, [in] const BSTR bstrDeviceType, [in] const BSTR bstrSessionID, [out, retval] BSTR * bstrEnvelope);
+};
+
+/*!
+* \since Envelope COM v31
+*
+* Envelope extension to support version negotiation
+*/
+[
+	object,
+	uuid(C2A73594-0238-456D-9F35-5442C1D9D3DA),
+	dual,
+	helpstring("IEnvelope3 Interface"),
+	pointer_default(unique)
+]
+interface IEnvelope3 : IEnvelope2
+{
+	/*!
+	* \since Envelope COM v31
+	*
+	* Queries UMC to determine its level of support for a provided set of envelope formats, each
+	* of which will be returned a supported attribute from the following set;
+	*
+	*   * \c YES - Supported for all devices
+	*   * \c PARTIAL - Supported for some devices
+	*   * \c No - Not supported for any device
+	*
+	* Additionally a supported attribute will be added to the EnvelopeVersions node to indicate
+	* the overall result as follows;
+	*
+	*   * \c YES - All envelope versions are fully supported
+	*   * \c PARTIAL - Some envelope versions are either partially or not supported
+	*   * \c No - None of the envelope versions are supported
+	*
+	* \param[in] xmlIn
+	*   The set of envelope versions supported (and allowed) by the server
+	*   \code{.xml}
+	*     <Parameters>
+	*       <EnvelopeVersions>
+	*         <Envelope Version="1.2" />
+	*         <Envelope Version="1.3" />
+	*         <!--  List all Envelope Versions allowable on this server -->
+	*       </EnvelopeVersions>
+	*     </Parameters>
+	*   \endcode
+	*
+	* \param[out] xmlOut
+	*   The supported state
+	*   \code{.xml}
+	*     <Parameters>
+	*       <EnvelopeVersions Supported="YES|PARTIAL|NO">
+	*         <Envelope Version="1.2" Supported="YES|PARTIAL|NO"/>
+	*         <Envelope Version="1.3" Supported="YES|PARTIAL|NO"/>
+	*         <!--  List all Envelope Versions provided in request -->
+	*       </EnvelopeVersions>
+	*     </Parameters>
+	*   \endcode
+	*
+	* \return
+	*   \c S_OK on success
+	*/
+	[id(17), helpstring("method NegotiateEnvelopeVersions")] HRESULT NegotiateEnvelopeVersions([in] BSTR xmlIn, [out, retval] BSTR* xmlOut);
+}
+
+[
+	object,
+	uuid(EC13E055-E8F5-4915-89E4-26C3FB75D4BB),
+	dual,
+	helpstring("IEnvelope4 Interface"),
+	pointer_default(unique)
+]
+interface IEnvelope4 : IEnvelope3
+{
+	typedef [v1_enum] enum
+	{
+		EnvelopeFormat_Unknown,
+		EnvelopeFormat_Clear,
+		EnvelopeFormat_Sign,
+		EnvelopeFormat_Encrypt,
+		EnvelopeFormat_SignEncrypt
+	} EnvelopeFormat;
+
+
+	[id(18), helpstring("method GetEnvelopeFormat")] HRESULT GetEnvelopeFormat([in]BSTR inputData, [out, retval]EnvelopeFormat* envelopeFormat);
+	[id(19), helpstring("method GetEnvelopeVersion")] HRESULT GetEnvelopeVersion([in]BSTR inputData, [out, retval]BSTR* envelopeVersion);
+}
+
+[
+	object,
+	uuid(D1D21DF8-C0EC-4FD3-A4ED-D3391D323EF6),
+	dual,
+	nonextensible,
+	helpstring("ICryptoHelper Interface"),
+	pointer_default(unique)
+]
+interface ICryptoHelper : IDispatch
+{
+	[id(1), helpstring("method VerifyKeyCheckValue")] HRESULT VerifyKeyCheckValue([in] BSTR bstrParametersXML, [in] BSTR bstrKeyToCheck, [in] BSTR bstrKeyCheckValue, [out, retval] VARIANT_BOOL * bVerify);
+};
+
+[
+	object,
+	uuid(2572BF87-5997-4be6-B327-C159B24A89BF),
+	dual,
+	nonextensible,
+	helpstring("ICryptoHelper2 Interface"),
+	pointer_default(unique)
+]
+interface ICryptoHelper2 : ICryptoHelper
+{
+	[id(2), helpstring("method GetCapabilities")] HRESULT GetCapabilities([out, retval] BSTR *bstrOutData);
+	[id(3), helpstring("method Hash")] HRESULT Hash([in] BSTR bstrInputData, [in] BSTR bstrHashAlgorithm, [in] BSTR bstrInputFormat, [out, retval] BSTR *bstrOutData);
+	[id(4), helpstring("method MultiHash")] HRESULT MultiHash([in] BSTR bstrInputData, [in] BSTR bstrHashAlgorithm, [in] BSTR bstrInputFormat, [in] LONG lHashIterations, [out, retval] BSTR *bstrOutData);
+	[id(5), helpstring("method MakePwd")] HRESULT MakePwd([in] BSTR bstrInputData, [in] BSTR bstrSalt, [in] BSTR bstrPwdAlgorithm, [out, retval] BSTR *bstrOutData);
+	[id(6), helpstring("method MakeAuthString")] HRESULT MakeAuthString([in] BSTR bstrInputDataXMLut, [in] BSTR bstrPersonSalt, [in] BSTR bstrSessionSalt, [in] BSTR bstrAuthAlgorithm, [out, retval] BSTR *bstrOutData);
+};
+
+[
+	uuid(EB7D7923-560A-449C-8D36-6AD346DFB566),
+	version(1.0),
+	helpstring("Envelope COM 1.0 Type Library")
+]
+library ENVELOPECOMLib
+{
+	importlib("stdole32.tlb");
+	importlib("stdole2.tlb");
+
+	[
+		uuid(994B0A5E-26AA-446F-9FA5-F4CEE3B9EEEF),
+		helpstring("Envelope Class, deprecated")
+	]
+	coclass Envelope
+	{
+		[default] interface IEnvelope;
+	};
+
+	[
+		uuid(55D5006F-17DA-47E5-B0A9-E035067A0593),
+		helpstring("Envelope2 Class")
+	]
+	coclass Envelope2
+	{
+		[default] interface IEnvelope2;
+		interface IEnvelope3;
+		interface IEnvelope4;
+	};
+
+	[
+		uuid(AC5DDB1F-3834-4624-8DB3-9F9202E6E638),
+		helpstring("CryptoHelper Class")
+	]
+	coclass CryptoHelper
+	{
+		[default] interface ICryptoHelper2;
+	};
+
+	[
+		uuid(0FBFC5DE-CE2E-4951-B66B-7B7A38087DD9),
+		helpstring("SoftwareCrypto Class")
+	]
+	coclass SoftwareCrypto
+	{
+		[default] interface ICryptoManager;
+		interface ICryptoProvider2;
+		interface ICryptoManager2;
+	};
+};

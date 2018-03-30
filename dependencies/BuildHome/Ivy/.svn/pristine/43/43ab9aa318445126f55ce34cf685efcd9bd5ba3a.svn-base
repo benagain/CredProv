@@ -1,0 +1,6 @@
+<project xmlns:if="ant:if" name="IvyClean" default="clean_all" >
+	<import file="build_common.xml" />
+	<import file="ivy_common_retrieve.xml" />
+    
+    <target name="clean_all" depends="clean-ivy-symlink-cache, clean_ivy_local, clean_ivy_cache" />
+</project>

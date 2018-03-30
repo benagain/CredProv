@@ -1,0 +1,126 @@
+// DataExchange.idl : IDL source for DataExchange.dll
+//
+
+// This file will be processed by the MIDL tool to
+// produce the type library (DataExchange.tlb) and marshalling code.
+
+import "oaidl.idl";
+import "ocidl.idl";
+
+
+typedef [uuid(01529A4D-380B-4a46-91A0-006E3F722961), helpstring("DataFormat enum")]
+enum EDataFormat
+{
+	Empty=0,
+	Raw=1,
+	Base64	=2,
+	Hex = 3,
+	Base64Hex =4
+}EDataFormat;
+
+
+import "eSCardCOM.idl";
+
+	[
+		object,
+		uuid(9C310001-DE04-4D6B-9736-03FC087B4CF5),
+		dual,
+		helpstring("IDataBuffer Interface"),
+		pointer_default(unique)
+	]
+	interface IDataBuffer : IDispatch
+	{
+		[id(1), helpstring("method WriteHex")] HRESULT WriteHex([in] BSTR data);
+		[id(2), helpstring("method ReadHex")] HRESULT ReadHex([out, retval] BSTR *data);
+		[id(3), helpstring("method WriteBase64")] HRESULT WriteBase64([in] BSTR data);
+		[id(4), helpstring("method ReadBase64")] HRESULT ReadBase64([out, retval] BSTR * data);
+		[id(5), helpstring("method WriteBase64Hex")] HRESULT WriteBase64Hex([in] BSTR data);
+		[id(6), helpstring("method ReadBase64Hex")] HRESULT ReadBase64Hex([out, retval] BSTR *data);
+		//[id(7), helpstring("method WriteData")] HRESULT WriteData([in] BSTR data, [in] long lDataLengthBytes);
+		[id(7), helpstring("method WriteData")] HRESULT WriteData([in] long lLengthOfData, [in, size_is(lLengthOfData)] byte *data);
+		//[id(8), helpstring("method ReadData")] HRESULT ReadData([out, retval] BSTR *data);
+		[id(8), helpstring("method ReadData")] HRESULT ReadData([in] long lLengthOfData, [in, out, size_is(lLengthOfData)] byte *data);
+		[propget, id(9), helpstring("property DataLength")] HRESULT DataLength([out, retval] long *pVal);
+		[propget, id(10), helpstring("property Empty")] HRESULT Empty([out, retval] short *pVal);
+		[id(11), helpstring("method Clear")] HRESULT Clear();
+		[id(12), helpstring("method WriteAPDU")] HRESULT WriteAPDU([in] LPSCARDCMD ptrSCardCmd);
+		[id(13), helpstring("method ReadAPDU")] HRESULT ReadAPDU([out, retval] ISCardCmd **ptrSCardCmd);
+	};
+
+	[
+		object,
+		uuid(A77DAC04-B682-4097-A50E-16AA6DDCDF94),
+		dual,
+		helpstring("IDataXBuffer Interface"),
+		pointer_default(unique)
+	]
+	interface IDataXBuffer : IDispatch
+	{
+		[id(1), helpstring("method WriteHex")] HRESULT WriteHex([in] BSTR data);
+		[id(2), helpstring("method ReadHex")] HRESULT ReadHex([out, retval] BSTR *data);
+		[id(3), helpstring("method WriteBase64")] HRESULT WriteBase64([in] BSTR data);
+		[id(4), helpstring("method ReadBase64")] HRESULT ReadBase64([out, retval] BSTR * data);
+		[id(5), helpstring("method WriteBase64Hex")] HRESULT WriteBase64Hex([in] BSTR data);
+		[id(6), helpstring("method ReadBase64Hex")] HRESULT ReadBase64Hex([out, retval] BSTR *data);
+		[id(7), helpstring("method WriteData")] HRESULT WriteData([in] long lLengthOfData, [in, size_is(lLengthOfData)] byte *data);
+		[id(8), helpstring("method ReadData")] HRESULT ReadData([in] long lLengthOfData, [in, out, size_is(lLengthOfData)] byte *data);
+		[propget, id(9), helpstring("property DataLength")] HRESULT DataLength([out, retval] long *pVal);
+		[propget, id(10), helpstring("property Empty")] HRESULT Empty([out, retval] short *pVal);
+		[id(11), helpstring("method Clear")] HRESULT Clear();
+	};
+
+	typedef [uuid(93E7DA88-5DDE-4f08-85F5-AF3819091C64), helpstring("GuidFormat enum")]
+	enum EGuidFormat
+	{
+		GuidFormatStandard=0,
+	}EGuidFormat;
+
+	[
+		object,
+		uuid(19A14D1D-6266-422C-8559-35AAB53D0B0D),
+		dual,
+		helpstring("ICreateGuid Interface"),
+		pointer_default(unique)
+	]
+	interface ICreateGuid : IDispatch
+	{
+		[id(1), helpstring("method Create")] HRESULT Create([in] EGuidFormat Format, [out, retval] BSTR * bstrGuid);
+	};
+
+[
+	uuid(3C72DD56-A942-4CF3-B623-F9CCE354D3EC),
+	version(1.0),
+	helpstring("DataExchange 1.0 Type Library")
+]
+library DATAEXCHANGELib
+{
+	importlib("stdole32.tlb");
+	importlib("stdole2.tlb");
+	import "eSCardCOM.idl";
+
+	[
+		uuid(07F9AB62-0C50-419C-B24E-66F9E5FDCE1E),
+		helpstring("DataBuffer Class")
+	]
+	coclass DataBuffer
+	{
+		[default] interface IDataBuffer;
+	};
+	[
+		uuid(09997331-906E-4732-95C2-06A811017C04),
+		helpstring("DataXBuffer Class")
+	]
+	coclass DataXBuffer
+	{
+		[default] interface IDataXBuffer;
+	};
+	[
+		uuid(C3586479-E0B2-4CD9-A37F-A8E0FC1C3F85),
+		helpstring("CreateGuid Class")
+
+	]
+	coclass CreateGuid
+	{
+		[default] interface ICreateGuid;
+	};
+};

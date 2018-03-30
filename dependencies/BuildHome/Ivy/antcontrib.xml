@@ -1,0 +1,8 @@
+<project name="AntContrib" >
+    <import file="ivyproperties.xml" />
+    
+    <target name="import">
+		<taskdef resource="net/sf/antcontrib/antcontrib.properties" classpath="${ivy.lib.dir}/bin/ant-contrib-0.6.jar" />
+    </target>
+
+</project>

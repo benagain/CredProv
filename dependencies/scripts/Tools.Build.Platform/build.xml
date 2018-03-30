@@ -1,0 +1,26 @@
+<project name="Tools.Build.Platform" default="publish-local" xmlns:unless="ant:unless" >
+
+	<get src="http://webtools.intercede.com/Ivy/0.0.3/bootstrap.xml" dest=".bootstrap.xml" />
+	<import file=".bootstrap.xml" />
+
+	<target name="jenkins" depends="publish-snapshot" />
+	
+	<target name="moduleZip">
+		<delete file="${ivy.zip.dir}/${ant.project.name}.zip" failonerror="false" />
+		
+		<zip destfile="${ivy.zip.dir}/${ant.project.name}.zip">
+			<mappedresources>
+				<zipfileset dir="${basedir}">
+					<include name="**" />
+					<exclude name="**/ivy.xml" />
+					<exclude name="**/build.properties" />
+					<exclude name="**/.bootstrap.xml" />
+					<exclude name=".ivy/**" />
+					<exclude name="dependencies/**" />
+				</zipfileset>
+				<regexpmapper from="^(.*)" to="${ant.project.name}/\1"/>
+			</mappedresources>
+		</zip>
+	</target>
+	
+</project>

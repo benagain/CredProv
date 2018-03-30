@@ -1,0 +1,175 @@
+<project name="Build.MsBuild" >
+	<!--
+    Choice of MSBuild to use.  This is either the most recent version found installed on this system, 
+	or the one specified by the compiler.tools property.  Use the Intercede tool naming convention, i.e.
+	VC10, VC12, VC14, VC15, etc.
+	
+	If you specify a version that is not installed then the script will fail.  
+	
+	This is in order to avoid suprising behaviour where you ask for a MSBuild version but a different
+	version is silently used instead.
+  -->
+	<condition property="MsBuildPath" value="C:\Program Files (x86)\Microsoft Visual Studio\2019\Professional\MSBuild\16.0\Bin">
+		<equals arg1="${compiler.tools}" arg2="VC16" />
+	</condition>
+	<condition property="MsBuildPath" value="C:\Program Files (x86)\Microsoft Visual Studio\2017\Professional\MSBuild\15.0\Bin">
+		<equals arg1="${compiler.tools}" arg2="VC15" />
+	</condition>
+	<condition property="MsBuildPath" value="C:\Program Files (x86)\MSBuild\14.0\Bin">
+		<equals arg1="${compiler.tools}" arg2="VC14" />
+	</condition>
+	<condition property="MsBuildPath" value="C:\Program Files (x86)\MSBuild\12.0\Bin">
+		<equals arg1="${compiler.tools}" arg2="VC12" />
+	</condition>
+	<condition property="MsBuildPath" value="C:\Windows\Microsoft.NET\Framework\v4.0.30319">
+		<equals arg1="${compiler.tools}" arg2="VC10" />
+	</condition>
+
+	<condition property="MsBuildPath" value="C:\Program Files (x86)\Microsoft Visual Studio\2019\Professional\MSBuild\16.0\Bin">
+		<available file="C:\Program Files (x86)\Microsoft Visual Studio\2017\Professional\MSBuild\16.0\Bin"/>
+	</condition>
+	<condition property="MsBuildPath" value="C:\Program Files (x86)\Microsoft Visual Studio\2017\Professional\MSBuild\15.0\Bin">
+		<available file="C:\Program Files (x86)\Microsoft Visual Studio\2017\Professional\MSBuild\15.0\Bin"/>
+	</condition>
+	<condition property="MsBuildPath" value="C:\Program Files (x86)\MSBuild\14.0\Bin">
+		<available file="C:\Program Files (x86)\MSBuild\14.0\Bin"/>
+	</condition>
+	<condition property="MsBuildPath" value="C:\Program Files (x86)\MSBuild\12.0\Bin">
+		<available file="C:\Program Files (x86)\MSBuild\12.0\Bin"/>
+	</condition>
+	<condition property="MsBuildPath" value="C:\Program Files (x86)\MSBuild\4.0\Bin">
+		<available file="C:\Program Files (x86)\MSBuild\4.0\Bin"/>
+	</condition>
+
+	<property name="MsBuildPath" location="C:\Windows\Microsoft.NET\Framework\v4.0.30319"/>
+
+	<fail message="MSBuild path not found: ${MsBuildPath}">
+		<condition>
+			<not>
+				<available file="${MsBuildPath}"/>
+			</not>
+		</condition>
+	</fail>
+
+	<import file="${ivy.lib.dir}/antcontrib.xml" />
+
+
+	<extension-point name="ready-to-build" />
+	
+	<target name="msbuild" depends="AntContrib.import, ready-to-build">
+		<!-- <fail unless="vs.solution.path" /> -->
+		<property name="vs.solution.path" value="${ant.project.name}" />
+
+		<condition property="msbuild.project.configuration" value="/p:Configuration=${vs.project.configuration}" else="">
+			<isset property="vs.project.configuration" />
+		</condition>
+
+		<property name="vs.project.targets" value="" />
+		<propertyregex property="msbuild.targets" input="${vs.project.targets}" regexp="[\w\\]+" replace="/t:\0" global="true" defaultValue="" />
+
+		<property name="vs.properties" value="" />
+		<propertyregex property="msbuild.properties" input="${vs.properties}" regexp="[\w=\\.\-]+" replace="/p:\0" global="true" defaultValue="" />
+		<echo>${msbuild.properties}</echo>
+
+		<condition property="msbuild.vs.version" value="/p:VisualStudioVersion=${vs.version}" else="">
+			<isset property="vs.version" />
+		</condition>
+
+		<condition property="msbuild.platform.target" value="/p:Platform=${vs.platform}" else="">
+			<isset property="vs.platform" />
+		</condition>
+
+		<condition property="msbuild.publish.profile" value="/p:DeployOnBuild=true /p:PublishProfile=${vs.publish.profile}" else="">
+			<isset property="vs.publish.profile" />
+		</condition>
+
+		<condition property="msbuild.clean" value="/t:clean" else="">
+			<isset property="vs.clean-first" />
+		</condition>
+
+		<condition property="msbuild.version" 
+               value="/p:VERSION_MAJOR=${VERSION_MAJOR} /p:VERSION_MINOR=${VERSION_MINOR} /p:VERSION_REVISION=${VERSION_REVISION} /p:VERSION_BUILD=${VERSION_BUILD}" else="">
+			<isset property="VERSION_MAJOR" />
+		</condition>
+
+		<condition property="msbuild.parallel" value="" else="/m">
+			<isset property="vs.not_parallel" />
+		</condition>
+
+		<echo>Building targets ${vs.project.targets}</echo>
+
+		<exec executable="${MsBuildPath}\msbuild.exe" failonerror="true">
+			<arg value="${vs.solution.path}" />
+			<arg value="${msbuild.project.configuration}" />
+			<arg value="${msbuild.clean}" />
+			<arg line="${msbuild.targets}" />
+			<arg line="${msbuild.properties}" />
+			<arg line="${msbuild.version}" />
+			<arg value="${msbuild.vs.version}" />
+			<arg value="${msbuild.platform.target}" />
+			<arg value="${msbuild.parallel}" />
+			<arg line="${msbuild.publish.profile}" />
+		</exec>
+
+	</target>
+
+
+	<!-- A macro definition for msbuild. Currently this is less powerful than the msbuild target above
+  but it avoids the need to use antcall all the time and allows more compact build targets -->
+	<macrodef name="msbuild" uri="com.intercede.build">
+		<!-- Mandatory attributes -->
+		<attribute name="configuration" description="Name of the configuration to build (Release_UML, Debug_UML, etc)" />
+		<attribute name="platform" description="Name of the platform to build (Win32, x64, etc)" />
+
+		<!-- Optional attributes -->
+		<attribute name="solution" description="Path to the solution / project file to be built" default="${vs.solution.path}" />
+		<attribute name="properties" description="Space seperated set of extra properties to set (overrides project properties)" default="" />
+
+		<sequential>
+
+			<local name="next.build.version" />
+			<property name="next.build.version" value="0.0.0" />
+
+			<!-- Set properties (locally) -->
+			<local name="msbuild.solution" />         <available property="msbuild.solution" value="@{solution}" type="file" file="@{solution}" />
+			<local name="msbuild.configuration" />    <property name="msbuild.configuration" value="@{configuration}" />
+			<local name="msbuild.platform" />         <property name="msbuild.platform" value="@{platform}" />
+			<local name="msbuild.properties.build" /> <propertyregex property="msbuild.properties.build" input="@{properties}" regexp="[\w=\\]+" replace="/p:\0" global="true" defaultValue="" />
+			<local name="msbuild.properties" />       <property name="msbuild.properties" value="/p:ASSEMBLY_VERSION=${next.build.version} ${msbuild.properties.build}" />
+
+			<echo>Properties: ${msbuild.properties}</echo>
+			<fail />
+
+			<!-- Property validation -->
+			<fail unless="msbuild.solution">Solution file '@{solution}' does not exist</fail>
+
+			<!-- Execute msbuild -->
+			<echo>Building ${msbuild.configuration}|${msbuild.platform} from solution ${msbuild.solution}</echo>
+			<exec executable="${MsBuildPath}\msbuild.exe" failonerror="true">
+				<arg value="${msbuild.solution}" />
+				<arg value="/p:Configuration=${msbuild.configuration}" />
+				<arg value="/p:Platform=${msbuild.platform}" />
+				<arg line="${msbuild.properties}" />
+				<arg value="/m" />    <!-- Parallel build -->
+			</exec>
+		</sequential>
+	</macrodef>
+
+
+	<target name="nuget-restore" >
+		<exec executable="${dependency.dir}/tools/nuget/nuget.exe" failonerror="true">
+			<arg value="restore" />
+			<arg value="-configfile" />
+			<arg value="${build.home}/Ivy/bin/nuget.config" />
+		</exec>
+	</target>
+
+	<!-- Restore NuGet packages for project.  Currently assumes the solution is in the current directory. -->
+	<macrodef name="nuget-restore">
+		<sequential>
+			<antcall target="nuget-restore" />
+		</sequential>
+	</macrodef>
+
+</project>
+

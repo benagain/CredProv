@@ -1,0 +1,6 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<configuration>
+  <packageSources>
+    <add key="Artifactory" value="https://artifactory.intercede.com/artifactory/api/nuget/nuget-release-local" />
+  </packageSources>
+</configuration>

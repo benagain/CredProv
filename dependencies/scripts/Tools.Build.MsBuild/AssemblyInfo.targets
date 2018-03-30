@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+	<PropertyGroup>
+		<AssemblyInfoFile>Properties\AssemblyInfo.cs</AssemblyInfoFile>
+		<AssemblyVersionInfoFile>Properties\AssemblyVersionInfo.cs</AssemblyVersionInfoFile>
+		<ASSEMBLY_VERSION Condition=" $(ASSEMBLY_VERSION) == '' ">0.0.0.0</ASSEMBLY_VERSION>
+		<Version>$(ASSEMBLY_VERSION)</Version>
+		<InformationalVersion Condition=" $(ASSEMBLY_VERSION_INFO) != '' ">$(ASSEMBLY_VERSION_INFO)</InformationalVersion>
+		<Company Condition=" $(AssemblyCompany) == '' ">Intercede Ltd</Company>
+		<Copyright Condition=" $(AssemblyCopyright) == '' ">Copyright © Intercede Ltd 2018</Copyright>
+	</PropertyGroup>
+
+	<!-- Create an assembly version info file with the Ivy version (and Company copyright etc.) -->
+	<Target Name="UpdateAssemblyVersionInfo">
+		<Message Text="Generating AssemblyVersionInfo file: $(ASSEMBLY_VERSION)" />
+
+		<!-- File should never be committed to source control, but just in case clear read-only attribute -->
+		<Attrib Files="$(AssemblyVersionInfoFile)" Normal="true" />
+
+		<AssemblyInfo CodeLanguage="CS"  
+            OutputFile="$(AssemblyVersionInfoFile)" 
+            AssemblyConfiguration="$(Configuration)"
+            AssemblyCompany="$(Company)"
+            AssemblyCopyright="$(Copyright)"
+            AssemblyVersion="$(Version)" 
+            AssemblyInformationalVersion="$(InformationalVersion)" 
+            AssemblyFileVersion="$(Version)" />
+
+		<Message Text="AssemblyInfo files updated to version &quot;$(Version)&quot;" />
+	</Target>
+
+	<PropertyGroup>
+		<BuildDependsOn Condition="Exists('$(AssemblyInfoFile)')">UpdateAssemblyVersionInfo;$(BuildDependsOn)</BuildDependsOn>
+	</PropertyGroup>
+</Project>

@@ -1,0 +1,147 @@
+// CSP COM.idl : IDL source for CSP COM.dll
+//
+
+// This file will be processed by the MIDL tool to
+// produce the type library (CSP COM.tlb) and marshalling code.
+
+import "oaidl.idl";
+import "ocidl.idl";
+	[
+		object,
+		uuid(81BAF9DC-59A5-4F6C-9D67-4A492D6750E1),
+		dual,
+		helpstring("ICSPSmartCard Interface"),
+		pointer_default(unique)
+	]
+	interface ICSPSmartCard : IDispatch
+	{
+		[id(1), helpstring("method EnumerateSmartCardCertificates")] HRESULT EnumerateSmartCardCertificates([in] BSTR xmlInput, [out, retval] BSTR* xmlOutput);
+		[id(2), helpstring("method CSPContainerDetails")] HRESULT CSPContainerDetails([in] BSTR xmlIn, [out, retval] BSTR *xmlOut);
+	};
+
+	[
+		object,
+		uuid(CF937333-847F-4557-ABAC-894710E09C9F),
+		dual,
+		helpstring("ICSPUtils Interface"),
+		pointer_default(unique)
+	]
+	interface ICSPUtils : IDispatch
+	{
+		[id(1), helpstring("method DecodeASNCertificates")] HRESULT DecodeASNCertificates([in] BSTR xmlInput, [out, retval] BSTR *xmlOutput);
+		[id(2), helpstring("method DecodeASNCertificatesSerialNumbers")] HRESULT DecodeASNCertificatesSerialNumbers([in] BSTR xmlInput, [out, retval] BSTR *xmlOutput);
+		[id(3), helpstring("method VerifyRevocationStatusASNCertificates")] HRESULT VerifyRevocationStatusASNCertificates([in] BSTR xmlInput, [out ,retval] BSTR *xmlOutput);
+		[id(4), helpstring("method Decrypt")] HRESULT Decrypt([in] BSTR xmlInput, [out, retval] BSTR *xmlOutput);
+		[id(5), helpstring("method Encrypt")] HRESULT Encrypt([in] BSTR xmlInput, [out, retval] BSTR *xmlOutput);
+
+		/*!
+		* \param[in] xmlInput
+		*   <br/>
+		*   \code{.xml}
+		*     <Parameters>
+		*       <CSPName></CSPName>
+		*       <ReaderName></ReaderName>				<!-- Optional -->
+		*       <ContainerName></ContainerName>
+		*       <Message>abc123</Message>
+		*       <PIN>12541254</PIN>						<!-- Optional -->
+		*       <ClearCache></ClearCache>
+		*       <HashAlgorithm>SHA256</HashAlgorithm>	<!-- Optional -->
+		*     </Parameters>
+		*   \endcode
+		*   <br/>
+		*   <b>/Parameters/HashAlgorithm</b><br/>
+		*     <i>Since CSP COM v65</i><br/>
+		*     Specifies the hash algorithm which the CSP must use to sign the message. Valid values
+		*     are as follows;
+		*     <br/>
+		*      - \c SHA1
+		*      - \c SHA256
+		*      - \c preferSHA256 - <i>Allows SHA1 fallback if CSP does not support SHA256</i>
+		*     <br/>
+		*     If no value is provided the default value of \c SHA1 will be used
+		*
+		* \param[out] xmlOutput
+		*   <br/>
+		*   \code{.xml}
+		*     <Parameters>
+		*       <SignedData></SignedData>
+		*       <HashAlgorithm>SHA256</HashAlgorithm>
+		*     </Parameters>
+		*   \endcode
+		*   <br/>
+		*   <b>/Parameters/HashAlgorithm</b><br/>
+		*     <i>Since CSP COM v65</i><br/>
+		*     Indicates which hash algorithm was used to sign the message
+		*/
+		[id(6), helpstring("method Sign")] HRESULT Sign([in] BSTR xmlInput, [out, retval] BSTR *xmlOutput);
+
+		/*!
+		* \param[in] xmlInput
+		*   <br/>
+		*   \code{.xml}
+		*     <Parameters>
+		*       <CSPName></CSPName>
+		*       <ReaderName></ReaderName>				<!-- Optional -->
+		*       <PublicKey></PublicKey>
+		*       <SignedData></SignedData>
+		*       <Message>abc123</Message>
+		*       <HashAlgorithm>SHA256</HashAlgorithm>	<!-- Optional -->
+		*     </Parameters>
+		*   \endcode
+		*   <br/>
+		*   <b>/Parameters/HashAlgorithm</b><br/>
+		*     <i>Since CSP COM v65</i><br/>
+		*     Specifies the hash algorithm which the CSP must use to verify the message. Valid values
+		*     are as follows;
+		*     <br/>
+		*      - \c SHA1
+		*      - \c SHA256
+		*     <br/>
+		*     If no value is provided the default value of \c SHA1 will be used
+		*
+		* \param[out] xmlOutput
+		*   <br/>
+		*   \code{.xml}
+		*     <Parameters>
+		*       <SignatureVerified>TRUE</SignatureVerified>
+		*     </Parameters>
+		*   <br/>
+		*   <b>/Parameters/SignatureVerified</b><br/>
+		*     \c TRUE or \c FALSE to indicate whether the signature was valid
+		*   \endcode
+		*/
+		[id(7), helpstring("method Verify")] HRESULT Verify([in] BSTR xmlInput, [out, retval] BSTR *xmlOutput);
+		[id(8), helpstring("method VerifyASNCertificate")] HRESULT VerifyASNCertificate([in] BSTR xmlInput, [out, retval] BSTR * xmlOutput);
+		[id(9), helpstring("method SilentCSPLogin")] HRESULT SilentCSPLogin([in] BSTR xmlInput, [out] unsigned long *hCSP, [out] BSTR *bstrContainerName, [out, retval] long *lErrorCode);
+		//SilentCSPLogin64 allows HCRYPTPROV to be 64bit value
+		[id(10), helpstring("method SilentCSPLogin64")] HRESULT SilentCSPLogin64([in] BSTR xmlInput, [out] ULONG_PTR *hCSP, [out] BSTR *bstrContainerName, [out, retval] long *lErrorCode);
+	};
+
+[
+	uuid(8761AC3C-0AF0-423C-B5FB-E105CF2E6095),
+	version(1.0),
+	helpstring("CSP COM 1.0 Type Library")
+]
+library CSPCOMLib
+{
+	importlib("stdole32.tlb");
+	importlib("stdole2.tlb");
+
+	[
+		uuid(B649E09F-E0DC-4859-BF80-517E16875BDF),
+		helpstring("CSPSmartCard Class")
+	]
+	coclass CSPSmartCard
+	{
+		[default] interface ICSPSmartCard;
+	};
+
+	[
+		uuid(6F9FD81E-85CC-4FD6-B97F-855A3C023E60),
+		helpstring("CSPUtils Class")
+	]
+	coclass CSPUtils
+	{
+		[default] interface ICSPUtils;
+	};
+};

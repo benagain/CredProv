@@ -1,0 +1,90 @@
+<project >
+	<import file="${ivy.lib.dir}/antcontrib.xml" />
+
+	<target name="analyse-opencppcoverage" depends="checkout-opencppcoverage, AntContrib.import" description="Run code coverage">
+		<fail unless="analyse.exe" />
+
+        <property name="executable.path" location="${dependency.tools.dir}/opencppcoverage/opencppcoverage.exe" />
+		
+		<property name="analyse.result" value="${base.dir}/TestResults" />
+		
+		<property name="analyse.source.dir" value="${base.dir}" />
+		<property name="analyse.dir" value="${base.dir}" />
+		<property name="analyse.name" value="${ant.project.name}" />
+		
+		<!-- excluded sources -->
+		<!-- \dependencies\ == don't care about code coverage of other libraries -->
+		<!-- \UnitTest\ \VC10\ \VC12\ == exclude any compiler generated code -->
+		<property name="default.excluded.sources" value="\dependencies\;\UnitTest\;\VC10\;\VC12\;\VC14\;\VC15\" />
+		<!-- condition appends custom exclusions to default exclusions if set -->
+		<condition property="excluded.sources" value="${default.excluded.sources};${analyse.excluded.sources}" else="${default.excluded.sources}">
+			<isset property="analyse.excluded.sources"/>
+		</condition>
+		<!-- regex replaces ';' character with the 'excluded_sources' argument name -->
+		<propertyregex property="excluded.sources"
+			override="true"
+			input="${excluded.sources}"
+			regexp=";"
+			replace=" --excluded_sources "
+			/>
+		
+		<!-- Convert the paths opencppcoverage uses, it does string comparisons
+			so expects windows format -->
+		<pathconvert targetos="windows" property="test.exe">
+			<path location="${analyse.exe}" />
+		</pathconvert>
+		
+		<pathconvert targetos="windows" property="source.dir">
+			<path location="${analyse.source.dir}" />
+		</pathconvert>
+		
+		<!-- Define locations for the re-directed stdout/stderr -->
+		<pathconvert targetos="windows" property="analyse.result.output">
+			<path location="${analyse.result}/${analyse.name}.opencppcoverage.out" />
+		</pathconvert>
+		
+		<pathconvert targetos="windows" property="analyse.result.error">
+			<path location="${analyse.result}/${analyse.name}.opencppcoverage.err" />
+		</pathconvert>
+		
+		<!-- The cobertura results are written into a single file -->
+		<pathconvert targetos="windows" property="analyse.result.cobertura">
+			<path location="${analyse.result}/${analyse.name}.opencppcoverage.xml" />
+		</pathconvert>
+		
+		<!-- The html results are written into a directory -->
+		<pathconvert targetos="windows" property="analyse.result.html">
+			<path location="${analyse.result}/${analyse.name}.opencppcoverage" />
+		</pathconvert>
+		
+		<!-- Delete all outputs from previous executions -->
+		<delete file="${analyse.result.output}" />
+		<delete file="${analyse.result.error}" />
+		<delete file="${analyse.result.cobertura}" />
+		<delete dir="${analyse.result.html}" />
+
+		<mkdir dir="${analyse.result}" />
+
+		<exec executable="${executable.path}" dir="${analyse.dir}" output='${analyse.result.output}' error='${analyse.result.error}' failonerror="true">
+			<arg value='--sources' />
+			<arg value='${source.dir}' />
+			<!-- excluded sources -->
+			<arg value='--excluded_sources' />
+			<arg line='${excluded.sources}' />
+			<!-- report output : cobertura -->
+			<arg value='--export_type' />
+			<arg value='cobertura:${analyse.result.cobertura}' />
+			<!-- report output : html -->
+			<arg value='--export_type' />
+			<arg value='html:${analyse.result.html}' />
+			<!-- The compiled code we want to analyse -->
+			<arg value='--modules' />
+			<arg value='${test.exe}' />
+			<!-- The executable to run -->
+			<arg value='${test.exe}' />
+		</exec>
+	</target>
+
+	<import file="checkout_tool.xml" />
+
+</project>

@@ -1,0 +1,143 @@
+// EdeficeSmartCard.idl : IDL source for EdeficeSmartCard.dll
+//
+
+// This file will be processed by the MIDL tool to
+// produce the type library (EdeficeSmartCard.tlb) and marshalling code.
+
+import "oaidl.idl";
+import "ocidl.idl";
+import "Envelope COM.idl";
+import "APDUCard.idl";
+
+typedef enum tagDATAWRITE
+{
+	DATAWRITE_PUBLIC = 1,				// old true (maybe -1)
+	DATAWRITE_PRIVATE = 0,				// old false
+	DATAWRITE_MIXED = 3
+} DATAWRITE;
+
+[
+	object,
+	uuid(2E914131-FDCE-4A7B-B4EC-A90C551EB8D3),
+	dual,
+	helpstring("ISmartCard Interface"),
+	pointer_default(unique)
+]
+interface ISmartCard : IDispatch
+{
+	[id(1), helpstring("method Enumerate")] HRESULT Enumerate([out, retval] BSTR * bstrXML);
+	[id(2), helpstring("method GetCardDetails")] HRESULT GetCardDetails([in] BSTR bstrSN, [out, retval] BSTR * bstrXML);
+	[id(3), helpstring("method Login")] HRESULT Login([in] BSTR bstrSN, [in] BSTR bstrPIN, [in] VARIANT_BOOL PINExpiry);
+	[id(4), helpstring("ChangePIN: Deprecated use ChangePINEx")] HRESULT ChangePIN([in] BSTR bstrSN, [in] BSTR bstrOldPIN, [in] BSTR bstrNewPIN);
+	[id(5), helpstring("method Logout")] HRESULT Logout([in] BSTR bstrSN);
+	[id(6), helpstring("method IsLoggedIn")] HRESULT IsLoggedIn([in] BSTR bstrSN, [out, retval] VARIANT_BOOL * LoggedIn);
+	[id(7), helpstring("method Initialise: Deprecated use Initialisation")] HRESULT Initialise([in] BSTR bstrSN, [in] BSTR bstrNewPIN, [in] long PINExpiry, [in] long PINHistory, [out, retval] BSTR * bstrUnlockCode);
+	[id(8), helpstring("method UnlockCard: Deprecated use UnlockCardEx")] HRESULT UnlockCard([in] BSTR bstrSN, [in] BSTR bstrUnlockCode, [in] BSTR bstrNewPIN);
+	[id(9), helpstring("method DataWrite")] HRESULT DataWrite([in] BSTR bstrSN, [in] BSTR bstrDataName, [in] BSTR bstrChunkName, [in] BSTR bstrData, [in] short Public);
+	[id(10), helpstring("method DataRead")] HRESULT DataRead([in] BSTR bstrSN, [in] BSTR bstrDataName, [in] BSTR bstrChunkName, [out, retval] BSTR * bstrData);
+	[id(11), helpstring("method DataDelete")] HRESULT DataDelete([in] BSTR bstrSN, [in] BSTR bstrDataName, [in] BSTR bstrChunkName);
+	[id(12), helpstring("method DataRename")] HRESULT DataRename([in] BSTR bstrSN, [in] BSTR bstrOldDataName, [in] BSTR bstrOldChunkName, [in] BSTR bstrNewDataName, [in] BSTR bstrNewChunkName);
+	[id(13), helpstring("method GenerateRandomString")] HRESULT GenerateRandomString([in] BSTR bstrSN, [in] int nSize, [in] BSTR bstrSeed, [out, retval] BSTR * bstrRandomString);
+	[id(14), helpstring("method CreatePKCS10")] HRESULT CreatePKCS10([in] BSTR bstrSN, [in] BSTR bstrDNName, [in] BSTR bstrUsage, [out, retval] BSTR * bstrPKCS10);
+	[id(15), helpstring("method AcceptPKCS7")] HRESULT AcceptPKCS7([in] BSTR bstrSN, [in] BSTR bstrPKCS7);
+	[id(16), helpstring("method CreateNewEncryptKeyPair")] HRESULT CreateNewEncryptKeyPair([in] BSTR bstrSN, [in] long keyLength, [out, retval] BSTR * bstrPublicEncryptKey);
+	[id(17), helpstring("method CreateNewSignKeyPair")] HRESULT CreateNewSignKeyPair([in] BSTR bstrSN, [in] long keyLength, [out, retval] BSTR * bstrPublicSignKey);
+	[id(18), helpstring("method GenerateKeyPair")] HRESULT GenerateKeyPair([in] BSTR bstrSN, [in] BSTR bstrKeyName, [in] long keyLength, [out, retval] BSTR * bstrPublicKey);
+	[id(19), helpstring("method SaveServerPublicEncryptKey")] HRESULT SaveServerPublicEncryptKey([in]BSTR bstrSN, [in]BSTR bstrServerPublicEncryptKey);
+	[id(20), helpstring("method SaveServerPublicSignKey")] HRESULT SaveServerPublicSignKey([in]BSTR bstrSN, [in]BSTR bstrServerPublicSignKey);
+	[id(21), helpstring("method SHA1")] HRESULT SHA1([in] BSTR bstrDataIn, [out, retval] BSTR *bstrDataOut);
+	[id(22), helpstring("method InitialiseEx: Deprecated use Initialisation")] HRESULT InitialiseEx([in] BSTR bstrSN, [in] BSTR bstrNewPIN, [in] BSTR bstrExInitialisationData, [in] BSTR bstrExInitialisationData2, [in] long PINExpiry, [in] long PINHistory, [out, retval] BSTR * bstrDeviceInitialisationData);
+	[id(23), helpstring("method ResetCard")] HRESULT ResetCard([in] BSTR bstrSN, [in] BSTR bstrUnlockCode);
+	[id(24), helpstring("method DeleteCertificates")] HRESULT DeleteCertificates([in] BSTR bstrSN, [in] BSTR bstrDeleteContainersXML);
+	[id(25), helpstring("method CreatePKCS10Ex")] HRESULT CreatePKCS10Ex([in] BSTR bstrSN, [in] BSTR bstrDNName, [in] BSTR bstrUsage, [in, optional] VARIANT vExtraXML, [out, retval] BSTR * bstrPKCS10);
+	[id(26), helpstring("method Initialisation")] HRESULT Initialisation([in] BSTR InitXML, [out, retval] BSTR * ReturnXML);
+	[id(27), helpstring("method UnlockCardEx")] HRESULT UnlockCardEx([in] BSTR UnlockXML, [out, retval] BSTR * ReturnXML);
+	[id(28), helpstring("method AcceptPKCS7Ex")] HRESULT AcceptPKCS7Ex([in] BSTR bstrSN, [in] BSTR bstrPKCS7, [in, optional] VARIANT vExtraXML);
+	[id(29), helpstring("method GetUnlockChallenge")] HRESULT GetUnlockChallenge([in]BSTR bstrXMLin,[out, retval]BSTR *bstrXMLOut);
+	[id(30), helpstring("method LockCard")] HRESULT LockCard([in]BSTR bstrXML,[out,retval]BSTR *bstrXMLout);
+	[id(31), helpstring("method PINStatusInfoRequest")] HRESULT PINStatusInfoRequest([in] BSTR bstrXMLin, [out, retval] BSTR * ReturnXML);
+	[id(32), helpstring("method ProcessAPDU")] HRESULT ProcessAPDU([in] BSTR bstrSN, [in] BSTR bstrApduScript, [out, retval] BSTR *pbstrApduScript);
+	[id(33), helpstring("method EnumerateCSPs")] HRESULT EnumerateCSPs([in] BSTR CSPType, [out,retval] BSTR *XMLReturn);
+	[id(34), helpstring("method CardInfoRequest")] HRESULT CardInfoRequest([in] BSTR bstrSN, [in] BSTR bstrXMLIn, [out, retval] BSTR *bstrXMLOut);
+	[id(35), helpstring("method GetVersion")] HRESULT GetVersion([out, retval] BSTR *xmlOut);
+	[id(36), helpstring("method ImportKey")] HRESULT ImportKey([in] BSTR bstrSN, [in] BSTR bstrXMLIn, [out, retval] BSTR *bstrXMLOut);
+	[id(37), helpstring("method AcceptPKCS7Ex2")] HRESULT AcceptPKCS7Ex2([in] BSTR bstrSN, [in] BSTR bstrPKCS7, [in, optional] VARIANT vExtraXML, [out, retval] BSTR *bstrXMLOut);
+	[id(38), helpstring("method ValidateCertificate")] HRESULT ValidateCertificate([in] BSTR xmlIn, [out, retval] BSTR *xmlOut);
+	[id(39), helpstring("method EnumerateCertificates")] HRESULT EnumerateCertificates([in] BSTR xmlIn, [out, retval] BSTR *xmlOut);
+	[id(40), helpstring("method CreateKeyFile")] HRESULT CreateKeyFile([in] BSTR bstrSN, [in] BSTR bstrXMLKeyFile);
+	[id(41), helpstring("ChangeSOPIN: Deprecated use ChangePINEx")] HRESULT ChangeSOPIN([in] BSTR bstrSN, [in] BSTR bstrXMLSOPINData, [out, retval] BSTR *bstrSOPINOut);
+	[id(42), helpstring("method FinalIssuance")] HRESULT FinalIssuance([in] BSTR bstrSN, [in] BSTR xmlIn, [out, retval] BSTR *xmlOut);
+	[id(43), helpstring("Instantiate card drivers")] HRESULT Instantiate([in] BSTR InstanceXML);
+	[id(44), helpstring("Perform any post initialisation work required")] HRESULT PostInitialisation([in] BSTR parametersXml);
+	[id(45), helpstring("Write a software token to the card")] HRESULT WriteSoftwareToken([in] BSTR SerialNumber, [in] BSTR SoftwareTokenXML);
+	[id(46), helpstring("Remove a software token from the card")] HRESULT RemoveSoftwareToken([in] BSTR SerialNumber, [in] BSTR SoftwareTokenXML);
+	[id(47), helpstring("Set Simulator")] HRESULT SetSimulator([in] IUnknown *pSimulator);
+	[id(48), helpstring("method ImportKeyEx")] HRESULT ImportKeyEx([in] BSTR bstrSN, [in] BSTR bstrXMLIn, [in] IUnknown *pAltDecryptProv, [out, retval] BSTR *bstrXMLOut);
+	[id(49), helpstring("Change PINs")] HRESULT ChangePINEx([in] const BSTR bstrXMLIn, [out, retval] BSTR *bstrXMLOut);
+	[id(50), helpstring("Display a message box")] HRESULT ShowMessage([in] BSTR MessageXML);
+	[id(51), helpstring("Remove a message box")] HRESULT ClearMessage();
+	[id(52), helpstring("Ends card transaction locks")] HRESULT EndCardTransactions([in] BSTR bstrParameters);
+};
+
+[
+	object,
+	uuid(E1629370-8C57-47AE-B465-3C3E3E98DA6C),
+	dual,
+	helpstring("ISmartCard2 Interface"),
+	pointer_default(unique)
+]
+interface ISmartCard2 : ISmartCard
+{
+	[id(53), helpstring("Updates the client unlock key of a Windows 7 VSC")] HRESULT UpdateClientUnlockKey([in] const BSTR xmlIn, [out, retval] BSTR *xmlOut);
+	[id(54), helpstring("Deletes a virtual smart card")] HRESULT DeleteVSC([in] BSTR bstrXMLIn, [out, retval] BSTR *bstrDeleteResponseXMLOut);
+	[id(55), helpstring("Sets the CryptoProvider")] HRESULT SetCryptoProvider([in] IUnknown* pUnk);
+	[id(56), helpstring("The Capability Level of the currently stored CryptoProvider")] HRESULT GetCryptoProviderCapabilityLevel([out, retval] long * plCryptoProviderCapabilityLevel);
+};
+
+[
+	uuid(9D5DD07B-ABE0-4C0B-B340-788A46C1E086),
+	version(1.0),
+	helpstring("EdeficeSmartCard 1.0 Type Library")
+]
+library EDEFICESMARTCARDLib
+{
+	importlib("stdole32.tlb");
+	importlib("stdole2.tlb");
+
+	[
+		uuid(D8842B37-7EBB-466B-A56F-D99536739155),
+		helpstring("SmartCard Class")
+	]
+	coclass SmartCard
+	{
+		[default] interface ISmartCard2;
+		interface ISmartCard;
+		interface ICryptoProvider2;
+	};
+
+	[
+		uuid(FE3BBDCD-D5CD-4b80-A180-952FA5D7D9FE),
+		helpstring("Win32APDUCard Class")
+	]
+	coclass Win32APDUCard
+	{
+		[default] interface IAPDUCard;
+	};
+
+	[
+		uuid(E4A32E9A-DDA7-434c-AF2A-B2E5A9901E18),
+		helpstring("DK_APDUCard Class")
+	]
+	coclass DK_APDUCard
+	{
+		[default] interface IAPDUCard;
+	};
+	[
+		uuid(D0D112E3-8709-4BFF-9F7F-CA5A496C92ED),
+		helpstring("PivApduCard Class")
+	]
+	coclass PivApduCard
+	{
+		[default] interface IAPDUCard;
+	};
+};

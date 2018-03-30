@@ -1,0 +1,50 @@
+<project name="Ivy.Bootstrap" xmlns:unless="ant:unless" xmlns:ivy="antlib:org.apache.ivy.ant" >
+
+	<!-- 
+	Bootstrapping lives directly under the root node, which means it runs before any targets.
+	
+	This means that the main build file can use <target depends="something-in-bootstrapped-scripts"/> without any failures
+	to parse the build.xml, and without any other schenanigans we've had to go through in the past.
+	
+	Various settings _can_ be configured if really neccessary, but please don't.
+	-->
+	<property name="dependency.dir" location="dependencies" />
+	<property name="build.home" location="${dependency.dir}/BuildHome" />
+	<property name="dependency.tools.dir" location="${dependency.dir}/tools" />
+	<property name="bootstrap.default.include" value="build_common" />
+	<property name="buildcommon.version" value="latest.integration" />
+	
+	<macrodef name="bootstrap">
+	<sequential>
+		<property name="svn.repo.root" value="https://svn/svn/MyID_Development" />
+		<property name="ivy.scripts.version" value="trunk" />
+		<property name="ivy.scripts.svn" value="Internal/BuildTools/IvyScripts/${ivy.scripts.version}" />
+		<property name="bootstrap.checkout.url" value="${ivy.scripts.svn}" />
+		<property name="bootstrap.checkout.destination" value="${build.home}/Ivy" />
+			
+		<mkdir dir="${bootstrap.checkout.destination}" />
+		<echo>svn checkout ${svn.repo.root}/${bootstrap.checkout.url}</echo>
+		<exec executable="svn" failonerror="true">
+			<arg value="co"/>
+			<arg value="${svn.repo.root}/${bootstrap.checkout.url}" />
+			<arg value="${bootstrap.checkout.destination}" />
+		</exec>
+				
+	</sequential>
+	</macrodef>
+
+
+	<!-- Download all the bootstrap scripts first -->
+	<bootstrap unless:set="bootstrap.done" />
+	
+	<!-- Now that the ivy scripts are locally available, they can be imported OK -->
+	<import file="${build.home}/Ivy/${bootstrap.default.include}.xml" />
+
+	<!-- Bootstrap the build scripts.  
+	     It isn't possible to use <antcall/> from outside a target, so use <ant/> instead -->
+	<ant antfile="${dependency.dir}/BuildHome/Ivy/build_common.xml" inheritAll="true" target="resolve-buildhome" unless:set="bootstrap.done" />
+
+	<!-- <antcall/>s inside the build scripts trigger re-parsing of the entire build.xml and all imports.
+	     We don't want to re-run bootstrap in that case -->
+	<property name="bootstrap.done" value="yes" />
+</project >

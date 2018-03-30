@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="Windows-1252"?>
+<VisualStudioPropertySheet
+	ProjectType="Visual C++"
+	Version="8.00"
+	Name="Console2008"
+	InheritedPropertySheets=".\NoDef2008.vsprops"
+	>
+	<Tool
+		Name="VCCLCompilerTool"
+		PreprocessorDefinitions="_CONSOLE"
+	/>
+	<Tool
+		Name="VCLinkerTool"
+		SubSystem="1"
+	/>
+</VisualStudioPropertySheet>

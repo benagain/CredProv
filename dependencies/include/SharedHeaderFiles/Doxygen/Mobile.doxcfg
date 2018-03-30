@@ -1,0 +1,10 @@
+@INCLUDE = Common.doxcfg
+
+CREATE_SUBDIRS         = NO
+PREDEFINED            += MOBILE
+FILE_PATTERNS         += *.mm \
+                         *.m
+EXCLUDE_PATTERNS       =
+PROJECT_LOGO           = "../SharedHeaderFiles/Doxygen/MyID2010.ico"
+DOT_FONTPATH           = ../../../Tools/Doxygen/Bin
+DOT_PATH               = ../../../Tools/Doxygen/Bin

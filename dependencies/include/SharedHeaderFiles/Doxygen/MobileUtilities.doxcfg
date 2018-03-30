@@ -1,0 +1,13 @@
+INPUT                 += ..\Utilities\CardLib \
+						 ..\Utilities\EdeficeCommon \
+						 ..\Utilities\EdeficeCommon\Conversions \
+						 ..\Utilities\EdeficeCommon\Conversions\Mobile \
+						 ..\Utilities\EdeficeCommon\Exceptions \
+						 ..\Utilities\EdeficeCommon\Exceptions\Mobile \
+						 ..\Utilities\EdeficeCommon\Mobile \
+						 ..\Utilities\PivLib \
+						 ..\Utilities\SoftCrypto \
+						 ..\Utilities\SoftCrypto\AbstractKeys \
+						 ..\Utilities\UtilitiesTests\Conversions \
+						 ..\Utilities\UtilitiesTests\EdeficeCommon \
+						 ..\Utilities\UtilitiesTests\SoftCrypto

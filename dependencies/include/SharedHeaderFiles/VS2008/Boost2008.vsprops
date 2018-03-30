@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="Windows-1252"?>
+<VisualStudioPropertySheet
+	ProjectType="Visual C++"
+	Version="8.00"
+	Name="Boost2008"
+	OutputDirectory=".\VC9\$(ConfigurationName)"
+	IntermediateDirectory="$(OutDir)\Obj"
+	>
+	<Tool
+		Name="VCCLCompilerTool"
+		AdditionalIncludeDirectories="$(SourceBase)\Products\Common\Boost-1.47"
+	/>	
+	<Tool
+		Name="VCLinkerTool"
+		AdditionalLibraryDirectories="$(SourceBase)\Products\Common\Boost-1.47\lib"
+	/>	
+</VisualStudioPropertySheet>

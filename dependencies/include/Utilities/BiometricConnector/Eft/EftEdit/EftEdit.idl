@@ -1,0 +1,32 @@
+import "oaidl.idl";
+import "ocidl.idl";
+
+[
+	object,
+	uuid(80096457-EDF4-43AE-8B05-6E7E4E113FB0),
+	dual,
+	nonextensible,
+	helpstring("IEftEditor Interface"),
+	pointer_default(unique)
+]
+interface IEftEditor : IDispatch{
+	[id(1)] HRESULT TransformXml([in] BSTR eftBase64, [in] BSTR userData, [out,retval] BSTR * result);
+	[id(2)] HRESULT MakeBinary([in] BSTR eftNistXml, [out,retval] BSTR * base64);
+};
+[
+	uuid(7FBA430C-FC71-491A-9AF7-F166D0FA5B44),
+	version(1.0),
+	helpstring("EftEdit 1.0 Type Library")
+]
+library EftEditLib
+{
+	importlib("stdole2.tlb");
+	[
+		uuid(B780C068-3DC4-4CC9-83CA-2DDD9F5EAD17),
+		helpstring("EftEditor Class")
+	]
+	coclass EftEditor
+	{
+		[default] interface IEftEditor;
+	};
+};

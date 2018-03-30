@@ -1,0 +1,32 @@
+/// \file
+/// CryptoManager interface
+/// This should be imported by Envelope COM and supporting components
+
+import "oaidl.idl";
+import "ocidl.idl";
+
+	[
+		object,
+		uuid(C0E4AD63-C588-44c1-BA02-8CD47D022B6E),
+		dual,
+		helpstring("ICryptoManager Interface"),
+		pointer_default(unique)
+	]
+	interface ICryptoManager : IDispatch
+	{
+		[id(1), helpstring("method Clear")] HRESULT Clear(void);
+		[id(2), helpstring("method GenerateKey")] HRESULT GenerateKey([in] const BSTR xmlInput, [out, retval] BSTR* bstrPublicKey);
+		[id(3), helpstring("method SetKey")] HRESULT SetKey([in] const BSTR bstrPublicKey);
+	};
+
+	[
+		object,
+		uuid(1BA6A0A9-425E-4A5C-BD7F-DA64FFBC2ABE),
+		dual,
+		helpstring("ICryptoManager2 Interface"),
+		pointer_default(unique)
+	]
+	interface ICryptoManager2 : ICryptoManager
+	{
+		[id(4), helpstring("method ImportKey")] HRESULT ImportKey([in] const BSTR bstrPrivateKey);
+	};

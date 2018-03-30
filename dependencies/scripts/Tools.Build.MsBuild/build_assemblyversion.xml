@@ -1,0 +1,82 @@
+<project name="Build.AssemblyVersion" >
+	<!--
+		Create a three-digit Assembly Version from the next local or snapshot ivy revision.  
+		
+		If this build is determined to be published to artifactory then the next snapshot revision will be used, 
+		otherwise it will be the next local development revision.
+	-->
+	<target name="make-build-version" extensionOf="ready-to-build" depends="detect-build-version, AntContrib.import">		
+		<mkdir dir="${ivy.base.dir}/build" />
+		<propertyfile file="${ivy.base.dir}/build/lastrun.properties">
+			<entry  key="assembly.version" value="${next.build.version}"/>
+		</propertyfile>
+
+		<property name="vs.properties" value="" />
+		<condition property="assembly.version.info" value="ASSEMBLY_VERSION_INFO=${ivy.new.revision}" else="">
+			<equals arg1="${publishType}" arg2="development" />
+		</condition>
+		
+		<!-- Prior scripts may have already set vs.properties, we want to append to it so we have to mutate it using propertyreset. -->
+		<propertyreset name="vs.properties" value="${vs.properties} ASSEMBLY_VERSION=${next.build.version} ${assembly.version.info}" />
+	</target>
+
+	<target name="detect-build-version" depends="detect-next-version, AntContrib.import">
+		<propertyregex property="next.build.version" input="${ivy.new.revision}" regexp="(\d*.\d*.\d*)" select="\1" />
+		<echo>New version: ${next.build.version}</echo>
+	</target>
+
+	<target name="detect-next-version" depends="detect-build-destination, ivy-new-version" />
+
+	<target name="detect-build-destination" depends="AntContrib.import, load-ivy">
+		<condition property="publishType" value="snapshot">
+			<or>
+				<contains string="${ant.project.invoked-targets}" substring="Jenkins" casesensitive="false" />
+				<contains string="${ant.project.invoked-targets}" substring="publish-snapshot"  />
+				<contains string="${sun.java.command}" substring="Jenkins" casesensitive="false" />
+				<contains string="${sun.java.command}" substring="publish-snapshot"  />
+			</or>
+		</condition>
+
+		<property name="publishType" value="development" />
+
+		<condition property="publish.version.suffix" value="-dev">
+			<equals arg1="${publishType}" arg2="development" />
+		</condition>
+
+		<echo>Detected publishType ${publishType}</echo>
+	</target>
+
+	<target name="check-assembly-version-is-ok-for-publish-type" extensionOf="ready-to-publish" depends="detect-build-version">
+		<loadproperties srcFile="${ivy.base.dir}/build/lastrun.properties" prefix="lastrun" />
+
+		<if>
+			<not>
+				<equals arg1="${lastrun.assembly.version}" arg2="${next.build.version}" />
+			</not>
+			<then>
+				<condition property="publishTypeDisplay" value="local" else="${publishType}">
+					<equals arg1="${publishType}" arg2="development" />
+				</condition>
+
+				<echo>This build was injected with an Assembly Version that is not correct for publishing to ${publishTypeDisplay}, which</echo>
+				<echo>is caused by running `ant build` and `ant publish-${publishTypeDisplay}` separately.  The build does not know where </echo>
+				<echo>to base its incremented version number from and so defaults to the local development artefact store.</echo>
+				<echo/>
+				<echo>Please re-run the and include both the build and publish-${publishTypeDisplay} targets.</echo>
+				<echo>If you want to run in two stages, include prepare-publish-${publishTypeDisplay} at the same time as the build.</echo>
+				<echo>	Injected version: ${lastrun.assembly.version}</echo>
+				<echo>	Expected version: ${next.build.version}</echo>
+				<fail message="Invalid Assembly Version for publish destination." />
+			</then>
+		</if>
+	</target>
+
+	<!--
+		Ant properties are immutable.  This makes them mutable.  Don't use this unless you really have to.
+	-->
+	<scriptdef name="propertyreset" language="javascript">
+		<attribute name="name"/>
+		<attribute name="value"/>
+		project.setProperty(attributes.get("name"), attributes.get("value"));
+	</scriptdef>	
+</project>

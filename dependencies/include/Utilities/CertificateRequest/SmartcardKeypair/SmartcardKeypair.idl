@@ -1,0 +1,31 @@
+// SmartcardKeypair.idl : IDL source for SmartcardKeypair.dll
+//
+
+// This file will be processed by the MIDL tool to
+// produce the type library (SmartcardKeypair.tlb) and marshalling code.
+
+import "oaidl.idl";
+import "ocidl.idl";
+
+import "Keypair.idl";
+
+[
+	uuid(8F2DC463-7081-47A0-8DD6-61EE8ECDE0F4),
+	version(1.0),
+	helpstring("SmartcardKeypair 1.0 Type Library")
+]
+library SMARTCARDKEYPAIRLib
+{
+	importlib("stdole32.tlb");
+	importlib("stdole2.tlb");
+
+	[
+		uuid(1AF901A7-F3FC-4441-B41F-C06F078C0031),
+		helpstring("SmartcardKeypair Class")
+	]
+	coclass SmartcardKeypair
+	{
+		[default] interface IKeypair;
+		interface IClientRSAProtectedKeyExchange;
+	};
+};

@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ImportGroup Label="PropertySheets" />
+  <PropertyGroup Label="UserMacros">
+    <BoostIncludePath>$(SourceBase)\Products\Common\Boost-1.66</BoostIncludePath>
+    <BoostLibraryPath>$(SourceBase)\Products\Common\Boost-1.66\lib</BoostLibraryPath>
+  </PropertyGroup>
+  <ItemGroup>
+    <BuildMacro Include="BoostIncludePath">
+      <Value>$(BoostIncludePath)</Value>
+    </BuildMacro>
+    <BuildMacro Include="BoostLibraryPath">
+      <Value>$(BoostLibraryPath)</Value>
+    </BuildMacro>
+  </ItemGroup>
+</Project>

@@ -1,0 +1,39 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup Label="UserMacros" Condition="'$(PlatformToolsetVersion)'=='100'">
+    <VC>VC10</VC>
+    <VS>2010</VS>
+    <Net>1600</Net>
+  </PropertyGroup>
+  <PropertyGroup Label="UserMacros" Condition="'$(PlatformToolsetVersion)'=='110'">
+    <VC>VC11</VC>
+    <VS>2012</VS>
+    <Net>1700</Net>
+  </PropertyGroup>
+  <PropertyGroup Label="UserMacros" Condition="'$(PlatformToolsetVersion)'=='120'">
+    <VC>VC12</VC>
+    <VS>2013</VS>
+    <Net>1800</Net>
+  </PropertyGroup>
+  <PropertyGroup Label="UserMacros" Condition="'$(PlatformToolsetVersion)'=='140'">
+    <VC>VC14</VC>
+    <VS>2015</VS>
+    <Net>1900</Net>
+  </PropertyGroup>
+  <PropertyGroup Label="UserMacros" Condition="'$(PlatformToolsetVersion)'=='141'">
+    <VC>VC15</VC>
+    <VS>2017</VS>
+    <Net>1910</Net>
+  </PropertyGroup>
+  <ItemGroup>
+    <BuildMacro Include="VC">
+      <Value>$(VC)</Value>
+    </BuildMacro>
+    <BuildMacro Include="VS">
+      <Value>$(VS)</Value>
+    </BuildMacro>
+    <BuildMacro Include="Net">
+      <Value>$(Net)</Value>
+    </BuildMacro>
+  </ItemGroup>
+</Project>

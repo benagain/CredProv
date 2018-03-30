@@ -1,0 +1,332 @@
+// GPScriptingObjects.idl : IDL source for GPScriptingObjects
+//
+
+// This file will be processed by the MIDL tool to
+// produce the type library (GPScriptingObjects.tlb) and marshalling code.
+
+import "oaidl.idl";
+import "ocidl.idl";
+
+
+//Global GP Scripting Language Constants
+typedef enum EncodingTypes
+{
+	HEX		= 0,
+	ASCII	= 1,
+	UTF8	= 2,
+	BASE64	= 3,
+	CN		= 4		///< Compact Numeric magnetic stripe format in [IS7811-6]
+}
+EncodingTypes;
+
+
+interface IByteString;
+
+//GP Scripting ByteString interface
+[
+	object,
+	uuid(FE8E375C-3D0F-477F-A406-A280F645AC33),
+	dual,
+	nonextensible,
+	helpstring("IByteString Interface"),
+	pointer_default(unique)
+]
+interface IByteString : IDispatch
+{
+	[propget, id(1), helpstring("property length")] HRESULT length([out, retval] LONG* pVal);
+
+	[id(2), helpstring("method toString")] HRESULT toString([in, optional] VARIANT lEncoding, [out, retval] BSTR *pStringVal);
+	[id(3), helpstring("method fromString")] HRESULT fromString([in] BSTR bstrNewValue, [in] LONG lEncoding); ///< not actually in GP spec
+
+	[id(4), helpstring("method byteAt")] HRESULT byteAt([in] LONG offset, [out, retval] LONG *pByteVal);
+	[id(5), helpstring("method bytes")] HRESULT bytes([in] LONG offsetByte, [in, optional] VARIANT nCountBytes, [out, retval] IByteString **ppOut);
+	[id(6), helpstring("method left")] HRESULT left([in] LONG numBytes, [out, retval] IByteString **ppOut);
+	[id(7), helpstring("method right")] HRESULT right([in] LONG numBytes, [out, retval] IByteString **ppOut);
+
+	[id(8), helpstring("method equals")] HRESULT equals([in] IByteString *pValToCompare, [out, retval] VARIANT_BOOL *bEquals);
+	[id(9), helpstring("method concat")] HRESULT concat([in] IByteString *pValToConcat, [out, retval] IByteString **ppOut);
+	[id(10), helpstring("method find")] HRESULT find([in] IByteString *pDataToFind, [in, optional] VARIANT lPosition, [out, retval] long *lPositionOut);
+
+	[id(11), helpstring("method and")] HRESULT and([in] IByteString *pValIn, [out, retval] IByteString **ppOut);
+	[id(12), helpstring("method or")] HRESULT or([in] IByteString *pValIn, [out, retval] IByteString **ppOut);
+	[id(13), helpstring("method xor")] HRESULT xor([in] IByteString *pValIn, [out, retval] IByteString **ppOut);
+	[id(14), helpstring("method not")] HRESULT not([out, retval] IByteString **ppOut);
+
+	/// lPadMethod=crypto.ISO9797_METHOD_1 | crypto.ISO9797_METHOD_2 vDontPad8 defaults to false - if true means if data-len is %8, do not add any padding
+	/// ISO9797_METHOD_1 pads with 0x00, ISO9797_METHOD_2 pads with 0x00 except first padding char is 0x80
+	[id(15), helpstring("method pad")] HRESULT pad([in] LONG lPadMethod, [in, optional] VARIANT vDontPad8, [out, retval] IByteString **ppOut);
+	[id(16), helpstring("method unpad")] HRESULT unpad([in] LONG lPadMethod, [out, retval] IByteString **ppOut);
+
+	// padToBlock not part of standard, but is necessary for AES key support. can be used as bs.pad(crypto.ISO9797_METHOD_1, myKey.GetProperty('BlockSize'));
+	[id(17), helpstring("method padToBlock")] HRESULT padToBlock([in] LONG lPadMethod, [in] LONG lBlockSize, [in, optional] VARIANT vDontPadBoundary, [out, retval] IByteString **ppOut);
+	[id(18), helpstring("method unpadToBlock")] HRESULT unpadToBlock([in] LONG lPadMethod, [in] LONG lBlockSize, [out, retval] IByteString **ppOut);
+};
+
+// GP Scripting ByteBuffer interface
+[
+	object,
+	uuid(F0DD9659-D30F-4F98-A692-482ECADF73FB),
+	dual,
+	nonextensible,
+	helpstring("IByteBuffer Interface"),
+	pointer_default(unique)
+]
+interface IByteBuffer : IDispatch
+{
+	[propget, id(1), helpstring("property length")] HRESULT length([out, retval] LONG* pVal);
+
+	[id(2), helpstring("method toString")] HRESULT toString([out, retval] BSTR *pStringVal);
+	[id(3), helpstring("method fromString")] HRESULT fromString([in] BSTR bstrNewValue, [in] LONG lEncoding); ///< not actually in GP spec
+
+	[id(4), helpstring("method byteAt")] HRESULT byteAt([in] LONG offset, [out, retval] LONG *pByteVal);
+
+	[id(5), helpstring("method append ByteBuffer, ByteString, String or TLV")] HRESULT append([in] VARIANT vSource, [out, retval] IByteBuffer **pByteBufferOut);
+	[id(6), helpstring("method toByteString")] HRESULT toByteString([in, optional] VARIANT nOffset, [in, optional] VARIANT nCount, [out, retval] IByteString **pByteStringOut);
+
+	[id(7), helpstring("method find")] HRESULT find([in] IByteString *pDataToFind, [in, optional] VARIANT lPosition, [out, retval] long *lPositionOut);
+	[id(8), helpstring("method clear")] HRESULT clear([in, optional] VARIANT vOffset, [in, optional] VARIANT vCount, [out, retval] IByteBuffer **pByteBufferOut);
+	[id(9), helpstring("method copy")] HRESULT copy([in] LONG at, [in] VARIANT vSource, [out, retval] IByteBuffer **pByteBufferOut);
+	[id(10), helpstring("method insert")] HRESULT insert([in] LONG at, [in] VARIANT vSource, [out, retval] IByteBuffer **pByteBufferOut);
+	
+	[id(11), helpstring("method setAt")] HRESULT setAt([in] LONG at, [in] LONG byVal); ///< not in GP spec, but useful to manipulate a single byte
+};
+
+typedef enum 
+{
+	DGI	= 0,
+	EMV	= 1,
+	L16	= 2
+}
+TLVEncodingModes;
+
+//GP Scripting TLV interface
+[
+	object,
+	uuid(A27AEAC3-DB87-48F7-9874-0BCC182E77F0),
+	dual,
+	nonextensible,
+	helpstring("ITLV Interface"),
+	pointer_default(unique)
+]
+interface ITLV : IDispatch
+{
+	// Encoding Modes
+	[propget, id(1), helpstring("property encoding mode DGI")] HRESULT DGI([out, retval] LONG* pVal);
+	[propget, id(2), helpstring("property encoding mode EMV")] HRESULT EMV([out, retval] LONG* pVal);
+	[propget, id(3), helpstring("property encoding mode L16")] HRESULT L16([out, retval] LONG* pVal);
+
+	[propget, id(4), helpstring("property size")] HRESULT size([out, retval] LONG* pVal);
+	[propget, id(5), helpstring("property encodingMode")] HRESULT encodingMode([out, retval] LONG* pVal);
+	[id(6), helpstring("method make")] HRESULT make([in] ULONG lTag, [in] IByteString *pValue, [in] LONG lEncoding); ///< not actually in GP spec
+
+	[id(7), helpstring("method getTag")] HRESULT getTag([out, retval] ULONG *pulTag);
+	[id(8), helpstring("method getValue")] HRESULT getValue([out, retval] IByteString **ppValue);
+	[id(9), helpstring("method getL")] HRESULT getL([out, retval] IByteString **ppValue);
+	[id(10), helpstring("method getLV")] HRESULT getLV([out, retval] IByteString **ppValue);
+	[id(11), helpstring("method getTLV")] HRESULT getTLV([out, retval] IByteString **ppValue);
+	[id(12), helpstring("method getTV")] HRESULT getTV([out, retval] IByteString **ppValue);
+
+	[id(13), helpstring("method toString")] HRESULT toString([out, retval] BSTR *pVal); ///< not actually in GP scripting spec, but will be useful
+};
+
+//GP Scripting TLVList interface
+[
+	object,
+	uuid(8FA426AD-FE72-4ED2-AC7C-E2FEDA7BAD11),
+	dual,
+	nonextensible,
+	helpstring("ITLVList Interface"),
+	pointer_default(unique)
+]
+interface ITLVList : IDispatch
+{
+	[propget, id(1), helpstring("property encodingMode")] HRESULT encodingMode([out, retval] LONG* pVal);
+	[propget, id(2), helpstring("property length")] HRESULT length([out, retval] LONG* pVal);
+
+	[id(3), helpstring("method make")] HRESULT make([in] IByteString *pValue, [in] LONG lEncoding); ///< not actually in GP spec
+	[id(4), helpstring("method append")] HRESULT append([in]VARIANT vSource, [in, optional]VARIANT vBytes);
+	[id(5), helpstring("method appendValue")] HRESULT appendValue([in] ULONG tag, [in] IByteString *pValue);
+	[id(6), helpstring("method appendValueIndex")] HRESULT appendValueIndex([in] LONG index, [in] IByteString *pValue);
+	[id(7), helpstring("method deleteByIndex")] HRESULT deleteByIndex([in] LONG index);
+	[id(8), helpstring("method deleteByTag")] HRESULT deleteByTag([in] ULONG tag);
+	[id(9), helpstring("method find")] HRESULT find([in] ULONG tag, [out, retval] ITLV **ppValue);
+	[id(10), helpstring("method findIndex")] HRESULT findIndex([in] ULONG tag, [out, retval] LONG *pVal);
+	[id(11), helpstring("method index")] HRESULT index([in] LONG index, [out, retval] ITLV **ppValue);
+	[id(12), helpstring("method toByteString")] HRESULT toByteString([out, retval] IByteString **ppValue);
+	[id(13), helpstring("method updateValue")] HRESULT updateValue([in] ULONG tag, [in] IByteString *pValue);
+	[id(14), helpstring("method updateValueIndex")] HRESULT updateValueIndex([in] LONG index, [in] IByteString *pValue);
+	[id(15), helpstring("method toString")] HRESULT toString([out, retval] BSTR *pVal); ///< not actually in GP scripting spec, but will be useful
+};
+
+//interface IScriptArray;
+
+//typedef [public] enum
+[v1_enum] enum TKeyComponent
+{
+	DES=0,		///< DES/2DES/3DES Key
+
+	CRT_P=1,	///< RSA Key Components
+	CRT_Q=2,	///< RSA Key Components
+	CRT_DP1=3,	///< RSA Key Components
+	CRT_DQ1=4,	///< RSA Key Components
+	CRT_PQ=5,	///< RSA Key Components
+
+	EXPONENT=6,	///< RSA public Exponent Value
+	MODULUS=7,	///< RSA public Modulus Value
+
+	SUBJECTPUBLICKEYINFO=8, ///< RSA public key, encoded as ASN1 SubjectPublicKeyInfo.
+
+	PRIVATEEXPONENT=9, ///< RSA Private Exponent Value
+
+	AES=10,		///< AES secret key
+
+	/// internal values
+	_COMPONENT_PRIVATEKEY_BLOB = 101,
+	_COMPONENT_PUBLICKEY_BLOB = 102
+};
+//TKeyComponent;
+
+// GP Scripting Key interface
+[
+	object,
+	uuid(5E142D83-47F1-4203-93FD-D24F95E9A092),
+	dual,
+	nonextensible,
+	helpstring("IKey Interface"),
+	pointer_default(unique)
+]
+interface IKey : IDispatch
+{
+	[propget, id(1), helpstring("property Key Component DES")]		HRESULT DES([out, retval] LONG* pVal);
+
+	[propget, id(2), helpstring("property Key Component CRT_P")]	HRESULT CRT_P([out, retval] LONG* pVal);
+	[propget, id(3), helpstring("property Key Component CRT_Q")]	HRESULT CRT_Q([out, retval] LONG* pVal);
+	[propget, id(4), helpstring("property Key Component CRT_DP1")]	HRESULT CRT_DP1([out, retval] LONG* pVal);
+	[propget, id(5), helpstring("property Key Component CRT_DQ1")]	HRESULT CRT_DQ1([out, retval] LONG* pVal);
+	[propget, id(6), helpstring("property Key Component CRT_PQ")]	HRESULT CRT_PQ([out, retval] LONG* pVal);
+	[propget, id(7), helpstring("property Key Component EXPONENT")]	HRESULT EXPONENT([out, retval] LONG* pVal);
+	[propget, id(8), helpstring("property Key Component MODULUS")]	HRESULT MODULUS([out, retval] LONG* pVal);
+	[propget, id(9), helpstring("property Key Component SUBJECTPUBLICKEYINFO")]	HRESULT SUBJECTPUBLICKEYINFO([out, retval] LONG* pVal);
+
+	[id(10), helpstring("method getComponent")] HRESULT getComponent([in] LONG lKeyComponent, [out, retval] IByteString **ppDataOut);
+	[id(11), helpstring("method setComponent")] HRESULT setComponent([in] LONG lKeyComponent, [in] IByteString *pDataIn);
+
+	/// support lMechanism = DES_CBC|DES_ECB|DES_2DES_16
+	[id(12), helpstring("method encrypt")] HRESULT encrypt([in] LONG lMechanism, [in] IByteString *pDataIn, [in, optional] VARIANT vInitialVector, [out, retval] IByteString **ppDataOut);
+	[id(13), helpstring("method decrypt")] HRESULT decrypt([in] LONG lMechanism, [in] IByteString *pDataIn, [in, optional] VARIANT vInitialVector, [out, retval] IByteString **ppDataOut);
+	[id(14), helpstring("method deriveKey")] HRESULT deriveKey([in] LONG lMechanism, [in] IByteString *pDivData, [out, retval] IKey **ppDerivedKey);
+
+	/// supports lKeyType DES|DES2|DES3
+	[id(15), helpstring("method generateKey")] HRESULT generateKey([in] LONG lKeyType);
+
+	[id(16), helpstring("method getSize")] HRESULT getSize([out, retval] LONG *plKeySizeBits);
+	[id(17), helpstring("method setSize")] HRESULT setSize([in] LONG lKeySizeBits);
+
+	[id(18), helpstring("method generateKeyPair")] HRESULT generateKeyPair([in] LONG lKeyMechanism, [in] LONG lKeySizeBits);
+
+	[propget, id(19), helpstring("property protKeyID")] HRESULT protKeyID([out, retval] LONG* pVal);
+	[propput, id(19), helpstring("property protKeyID")] HRESULT protKeyID([in] LONG val);
+
+	[id(20), helpstring("method GetProperty")] HRESULT GetProperty([in] BSTR bstrPropertyName, [out, retval] BSTR *bstrPropertyValue);
+
+	// additional Key type (Static)
+	[propget, id(21), helpstring("property Key Component AES")]		HRESULT AES([out, retval] LONG* pVal);
+};
+
+// Crypto statics
+[v1_enum] enum TCryptoMechanisms
+{
+	DES_CBC = 1,
+	DES_CBC_LP = 2,
+	DES_CBC_P = 3,
+	DES_ECB = 4,
+	DES_ECB_LP = 5,
+	DES_ECB_P = 6,
+	DES_MAC = 7,
+	DES_MAC_EMV = 8,
+	Crypto_RSA = 9,		///< Both a key type, and a mechanism
+	DES_2DES_16 = 10	///< from 8 bytes (D) diversify a 16 byte (key) using a 2DES master key using ECB mode. See Gemplus MPCOS Reference manual pg 38. E(Kl)D(Kr)E(Kl) + E(Kr)D(Kl)E(Kr)
+};
+
+// Crypto statics
+[v1_enum] enum TCryptoKeyTypes
+{
+	KeyTypeDES = 1,		///< DES
+	KeyTypeDES2 = 2,	///< DES2
+	KeyTypeDES3 = 3,	///< DES3 (not in GP Scripting spec!)
+	KeyTypeAES128 = 4,	///< AES128 (not in GP Scripting spec)
+	KeyTypeAES192 = 5,	///< AES192 (not in GP Scripting spec!)
+	KeyTypeAES256 = 6,	///< AES256 (not in GP Scripting spec!)
+};
+
+// Crypto statics
+[v1_enum] enum TCryptoHashTypes
+{
+	MD5 = 0,
+	SHA_1 = 1,
+	SHA_256 = 2
+};
+
+// Padding types
+[v1_enum] enum TCryptoPadTypes
+{
+	ISO9797_METHOD_1 = 1,
+	ISO9797_METHOD_2 = 2
+};
+
+// GP Crypto interface
+[
+	object,
+	uuid(4FA68AB6-9B13-42E8-8E34-FABBD7553A84),
+	dual,
+	nonextensible,
+	helpstring("ICrypto Interface"),
+	pointer_default(unique)
+]
+interface ICrypto : IDispatch
+{
+	//statics - hashtypes
+	[propget, id(1), helpstring("property MD5")]	HRESULT MD5([out, retval] LONG* pVal);
+	[propget, id(2), helpstring("property SHA_1")]	HRESULT SHA_1([out, retval] LONG* pVal);
+
+	//statics - crypto-mechanisms
+	[propget, id(3), helpstring("property DES_CBC")]	HRESULT DES_CBC([out, retval] LONG* pVal);
+	[propget, id(4), helpstring("property DES_CBC_LP")]	HRESULT DES_CBC_LP([out, retval] LONG* pVal);
+	[propget, id(5), helpstring("property DES_CBC_P")]	HRESULT DES_CBC_P([out, retval] LONG* pVal);
+	[propget, id(6), helpstring("property DES_ECB")]	HRESULT DES_ECB([out, retval] LONG* pVal);
+	[propget, id(7), helpstring("property DES_ECB_LP")]	HRESULT DES_ECB_LP([out, retval] LONG* pVal);
+	[propget, id(8), helpstring("property DES_ECB_P")]	HRESULT DES_ECB_P([out, retval] LONG* pVal);
+	[propget, id(9), helpstring("property DES_MAC")]	HRESULT DES_MAC([out, retval] LONG* pVal);
+	[propget, id(10), helpstring("property DES_MAC_EMV")] HRESULT DES_MAC_EMV([out, retval] LONG* pVal);
+
+	//statics - keytypes
+	[propget, id(11), helpstring("property RSA")]	HRESULT RSA([out, retval] LONG* pVal);
+	[propget, id(12), helpstring("property DES")]	HRESULT DES([out, retval] LONG* pVal);
+	[propget, id(13), helpstring("property DES2")]	HRESULT DES2([out, retval] LONG* pVal);
+	[propget, id(14), helpstring("property DES3")]  HRESULT DES3([out, retval] LONG* pVal);
+
+	// statics - padtypes
+	[propget, id(15), helpstring("property ISO9797_METHOD_1 (pad)")]	HRESULT ISO9797_METHOD_1([out, retval] LONG* pVal);
+	[propget, id(16), helpstring("property ISO9797_METHOD_2 (pad)")]  HRESULT ISO9797_METHOD_2([out, retval] LONG* pVal);
+
+	[id(17), helpstring("method generateRandom")] HRESULT generateRandom([in] LONG lLengthToGenerate, [out, retval] IByteString **ppDataOut);
+	[id(18), helpstring("method digest")] HRESULT digest([in] LONG lCryptoHashType, [in] IByteString *pDataToHash, [out, retval] IByteString **ppDataOut);
+
+	[id(19), helpstring("method encrypt")] HRESULT encrypt([in] IKey *pKey, [in] LONG lMechanism, [in] IByteString *pDataIn, [in, optional] VARIANT vInitialVector, [out, retval] IByteString **ppDataOut);
+	[id(20), helpstring("method decrypt")] HRESULT decrypt([in] IKey *pKey, [in] LONG lMechanism, [in] IByteString *pDataIn, [in, optional] VARIANT vInitialVector, [out, retval] IByteString **ppDataOut);
+
+	[id(21), helpstring("method generateKey")] HRESULT generateKey([in] LONG lKeyType, [in] IKey *pKey);
+	[id(22), helpstring("method generateKeyPair")] HRESULT generateKeyPair([in] LONG lKeyMechanism, [in] IKey *pPublicKey, [in] IKey *pPrivateKey);
+
+	// statics - additional crypto-mechanisms
+	[propget, id(23), helpstring("property DES_2DES_16")] HRESULT DES_2DES_16([out, retval] LONG* pVal);
+
+	//statics - additional keytypes
+	[propget, id(24), helpstring("property AES128")]	HRESULT AES128([out, retval] LONG* pVal);
+	[propget, id(25), helpstring("property AES192")]	HRESULT AES192([out, retval] LONG* pVal);
+	[propget, id(26), helpstring("property AES256")]	HRESULT AES256([out, retval] LONG* pVal);
+
+	// statics - additional hashing mechanisms
+	[propget, id(27), helpstring("property SHA_256")]	HRESULT SHA_256([out, retval] LONG* pVal);
+};
+

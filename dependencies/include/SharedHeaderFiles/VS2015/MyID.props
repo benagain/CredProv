@@ -1,0 +1,110 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ImportGroup Label="PropertySheets">
+    <Import Project="Compiler.props" />
+    <Import Project="SourceBase.props" />
+    <Import Project="OpenSSL_Location.props" />
+    <Import Project="Boost.props" />
+  </ImportGroup>
+  <PropertyGroup Label="UserMacros">
+    <DirLevel>..\..</DirLevel>
+    <DebugSuffix></DebugSuffix>
+    <!-- 150% of default PCH compilation heap memory allocation - this should be enough for the
+    majority of projects, individual projects can go even higher by overriding this if necessary
+    See: https://msdn.microsoft.com/en-us/library/bdscwf1c.aspx -->
+    <PCH_ZmSize>150</PCH_ZmSize>
+  </PropertyGroup>
+  <PropertyGroup Label="UserMacros" Condition="'$(Platform)'=='Win32'">
+    <BuildArchitecture>32</BuildArchitecture>
+    <PlatformSuffix></PlatformSuffix>
+  </PropertyGroup>
+  <PropertyGroup Label="UserMacros" Condition="'$(Platform)'=='x64'">
+    <BuildArchitecture>64</BuildArchitecture>
+    <PlatformSuffix>64</PlatformSuffix>
+  </PropertyGroup>
+  <PropertyGroup Label="UserMacros">
+    <AntDependenciesLib>lib$(BuildArchitecture)</AntDependenciesLib>
+    <LibPathAntDependencies>dependencies\lib\$(AntDependenciesLib)</LibPathAntDependencies>
+    <LibPathAntConfDependencies>dependencies\lib\$(VC)\$(Configuration)$(PlatformSuffix)</LibPathAntConfDependencies>
+  </PropertyGroup>
+  <PropertyGroup>
+    <_ProjectFileVersion>10.0.30319.1</_ProjectFileVersion>
+    <OutDir>.\$(VC)\$(Configuration)$(PlatformSuffix)\</OutDir>
+    <IntDir>$(OutDir)Obj\</IntDir>
+    <IncludePath>$(SolutionDir)dependencies\include\include$(PlatformSuffix);$(SolutionDir)..\dependencies\include\include$(PlatformSuffix);$(SolutionDir)..\dependencies\include;$(SolutionDir)dependencies\include;$(BoostIncludePath);$(DirLevel);$(SolutionDir);$(SourceBase);$(VCInstallDir)include;$(VCInstallDir)atlmfc\include;$(WindowsSdkDir)include;$(FrameworkSDKDir)include;$(IncludePath)</IncludePath>
+    <LibraryPath>$(SolutionDir)..\dependencies\lib;$(SolutionDir)dependencies\lib;$(LibraryPath)</LibraryPath>
+    <ExecutablePath>$(SourceBase);$(ExecutablePath)</ExecutablePath>
+    <SourcePath>$(OpenSSLSourcePath);$(SourcePath)</SourcePath>
+  </PropertyGroup>
+  <ItemGroup>
+    <BuildMacro Include="DirLevel">
+      <Value>$(DirLevel)</Value>
+    </BuildMacro>
+    <BuildMacro Include="PlatformSuffix">
+      <Value>$(PlatformSuffix)</Value>
+    </BuildMacro>
+    <BuildMacro Include="DebugSuffix">
+      <Value>$(DebugSuffix)</Value>
+    </BuildMacro>
+  </ItemGroup>
+  <ItemDefinitionGroup>
+    <Midl>
+      <OutputDirectory>$(VC)\</OutputDirectory>
+      <TypeLibraryName>%(Filename).tlb</TypeLibraryName>
+      <HeaderFileName>%(Filename).h</HeaderFileName>
+      <InterfaceIdentifierFileName>%(Filename)_i.c</InterfaceIdentifierFileName>
+      <ProxyFileName>%(Filename)_p.c</ProxyFileName>
+      <AdditionalIncludeDirectories>$(DirLevel)</AdditionalIncludeDirectories>
+    </Midl>
+    <ClCompile Condition="'$(PlatformToolsetVersion)'=='100'">
+      <AdditionalOptions>-Zm$(PCH_ZmSize) %(AdditionalOptions)</AdditionalOptions>
+    </ClCompile>
+    <ClCompile>
+      <PreprocessorDefinitions>WIN32;_WINDOWS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PrecompiledHeader>Use</PrecompiledHeader>
+      <WarningLevel>Level4</WarningLevel>
+      <TreatWarningAsError>true</TreatWarningAsError>
+      <RuntimeTypeInfo>true</RuntimeTypeInfo>
+      <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
+      <ExceptionHandling>Async</ExceptionHandling>
+      <InlineFunctionExpansion>AnySuitable</InlineFunctionExpansion>
+      <StringPooling>true</StringPooling>
+      <MinimalRebuild>true</MinimalRebuild>
+      <FunctionLevelLinking>true</FunctionLevelLinking>
+      <AdditionalUsingDirectories>$(SourceBase);%(AdditionalUsingDirectories)</AdditionalUsingDirectories>
+      <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
+      <ProgramDataBaseFileName>$(OutDir)$(ProjectName)vc$(PlatformToolsetVersion).pdb</ProgramDataBaseFileName>
+      <TreatWChar_tAsBuiltInType>true</TreatWChar_tAsBuiltInType>
+      <ForceConformanceInForLoopScope>true</ForceConformanceInForLoopScope>
+    </ClCompile>
+    <Link>
+      <ModuleDefinitionFile>$(ProjectName).def</ModuleDefinitionFile>
+      <SubSystem>Windows</SubSystem>
+      <TargetMachine>MachineX86</TargetMachine>
+      <OptimizeReferences>true</OptimizeReferences>
+      <ImageHasSafeExceptionHandlers>true</ImageHasSafeExceptionHandlers>
+      <AdditionalLibraryDirectories>
+$(DirLevel)\dependencies\lib;
+$(DirLevel)\$(LibPathAntConfDependencies);
+$(DirLevel)\$(LibPathAntDependencies);
+$(SolutionDir)..\$(LibPathAntConfDependencies);
+$(SolutionDir)..\$(LibPathAntDependencies);
+$(SolutionDir)$(LibPathAntConfDependencies);
+$(SolutionDir)$(LibPathAntDependencies);
+$(BoostLibraryPath)$(PlatformSuffix);
+$(SourceBase);
+$(LibraryPath);
+%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+    </Link>
+    <ResourceCompile>
+      <PreprocessorDefinitions>NET=$(Net);%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <Culture>0x0809</Culture>
+      <AdditionalIncludeDirectories>$(DirLevel)</AdditionalIncludeDirectories>
+    </ResourceCompile>
+    <Lib>
+      <TargetMachine>MachineX86</TargetMachine>
+      <SubSystem>Windows</SubSystem>
+    </Lib>
+    <CustomBuildStep />
+  </ItemDefinitionGroup>
+</Project>

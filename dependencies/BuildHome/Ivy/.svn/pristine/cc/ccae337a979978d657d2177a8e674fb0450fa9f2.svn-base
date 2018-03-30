@@ -1,0 +1,89 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ivy-settings>
+	<settings defaultResolver="default" circularDepdencyStrategy="error" />
+
+	<!--Authentication required for publishing (deployment). 'Artifactory Realm' is the realm used by Artifactory so don't change it.-->
+	<credentials host="artifactory.intercede.com" realm="Artifactory Realm" username="${artifactory.username}" passwd="${artifactory.password}" />
+
+	<property name="artifactory.url"                    value="https://artifactory.intercede.com/artifactory" />
+	<property name="artifactory.url.3rdparty"           value="${artifactory.url}/3rdparty" />
+	<property name="artifactory.url.release"            value="${artifactory.url}/intercede-release-local" />
+	<property name="artifactory.url.snapshot"           value="${artifactory.url}/intercede-snapshot-local" />
+
+	<property name="ivy.shared.default.artifact.pattern" value="[organisation]/[module]/(branches/[branch]/)[revision]/[artifact].[ext]" />
+	<property name="ivy.shared.default.artifact.pattern.old" value="[organisation]/[module]/(branches/[branch]/)[revision]/[module]-[revision](-[artifact]).[ext]" />
+
+	<caches>
+		<cache name="devcache" basedir="${ivy.local.default.root}/devCache" />
+	</caches> 
+	
+	<resolvers>
+		<filesystem name="development" force="true" cache="devcache" >
+			<ivy      pattern="${ivy.local.default.root}/${ivy.shared.default.artifact.pattern}" />
+			<artifact pattern="${ivy.local.default.root}/${ivy.shared.default.artifact.pattern}" />
+		</filesystem>
+
+		<url name="snapshot">
+			<ivy      pattern="${artifactory.url.snapshot}/${ivy.shared.default.artifact.pattern}" />
+			<artifact pattern="${artifactory.url.snapshot}/${ivy.shared.default.artifact.pattern}" />
+		</url>
+
+		<url name="release">
+			<ivy      pattern="${artifactory.url.release}/${ivy.shared.default.artifact.pattern}" />
+			<artifact pattern="${artifactory.url.release}/${ivy.shared.default.artifact.pattern}" />
+		</url>
+
+		<url name="3rdparty">
+			<ivy      pattern="${artifactory.url.3rdparty}/${ivy.shared.default.artifact.pattern}" />
+			<artifact pattern="${artifactory.url.3rdparty}/${ivy.shared.default.artifact.pattern}" />
+		</url>
+
+		<chain name="old-patterns">
+			<url name="original-intercede">
+				<ivy      pattern="${artifactory.url.snapshot}/${ivy.shared.default.artifact.pattern.old}" />
+				<artifact pattern="${artifactory.url.snapshot}/${ivy.shared.default.artifact.pattern.old}" />
+				<ivy      pattern="${artifactory.url.release}/${ivy.shared.default.artifact.pattern.old}" />
+				<artifact pattern="${artifactory.url.release}/${ivy.shared.default.artifact.pattern.old}" />
+				<ivy      pattern="${artifactory.url.3rdparty}/${ivy.shared.default.artifact.pattern.old}" />
+				<artifact pattern="${artifactory.url.3rdparty}/${ivy.shared.default.artifact.pattern.old}" />
+				<ivy      pattern="${artifactory.url.snapshot}/[organization]/[module]/[revision]/[type]s/ivy-[revision].xml" />
+				<artifact pattern="${artifactory.url.snapshot}/[organization]/[module]/[revision]/[type]s/[module](-[artifact])-[revision].[ext]" />
+				<ivy      pattern="${artifactory.url.release}/[organization]/[module]/[revision]/[type]s/ivy-[revision].xml" />
+				<artifact pattern="${artifactory.url.release}/[organization]/[module]/[revision]/[type]s/[module](-[artifact])-[revision].[ext]" />
+				<ivy      pattern="${artifactory.url.3rdparty}/[organization]/[module]/[revision]/[type]s/ivy-[revision].xml" />
+				<artifact pattern="${artifactory.url.3rdparty}/[organization]/[module]/[revision]/[type]s/[module](-[artifact])-[revision].[ext]" />
+			</url>
+		</chain>
+
+		<chain name="main" dual="true">
+		  <resolver ref="snapshot" />
+		  <resolver ref="release" />
+		  <resolver ref="3rdparty" />
+		</chain>
+
+		<chain name="artifactory">
+			<resolver ref="main" />
+			<resolver ref="old-patterns" />
+		</chain>
+
+		<chain name="default" returnFirst="true">
+			<resolver ref="development" />
+			<resolver ref="artifactory" />
+		</chain>
+
+		<filesystem name="republish">
+			<artifact pattern="${ivy.zip.dir}/[organization]-[module]-[revision]/[artifact].[ext]" />
+		</filesystem>
+	</resolvers>
+
+
+	<triggers>
+       <ant-call target="unzip" prefix="dep" event="post-retrieve-artifact" filter="ext=zip AND type=include AND NOT organisation=3rdparty"/>
+       <!--<ant-call target="unzip" prefix="dep" event="post-retrieve-artifact" filter="ext=zip AND type=lib"/>-->
+       <!-- <ant-call target="unzip" prefix="dep" event="post-retrieve-artifact" filter="ext=zip AND type=lib AND NOT organisation=3rdparty"/> -->
+       <ant-call target="symlink-includes" prefix="dep" event="post-retrieve-artifact" filter="ext=zip AND type=include AND organisation=3rdparty"/>
+       <ant-call target="symlink-module" prefix="dep" event="post-retrieve-artifact" filter="ext=zip AND NOT type=include AND NOT type=zip"/>
+	   <ant-call target="copy-tool-file" prefix="tool" event="pre-retrieve-artifact" filter="type=tool AND NOT ext=zip"/>
+	   <ant-call target="unzip-tool" prefix="tool" event="pre-retrieve-artifact" filter="type=tool AND ext=zip"/>
+	</triggers>
+</ivy-settings>

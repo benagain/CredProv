@@ -1,0 +1,19 @@
+<project name="IvyProperties" >
+
+	<property environment="env" />
+
+	<property name="ivy.base.dir" location="${basedir}/.ivy" />         <!-- where the .ivy directory lives -->
+	<dirname property="ivy.lib.dir" file="${ant.file.IvyProperties}" /> <!-- where the ivy.jar lives -->
+
+	<property file="${basedir}/build.properties" />
+	<property file="${basedir}/local.properties" />
+	<property file="${ivy.lib.dir}/ivy.default.properties" />
+
+	<!-- 
+	  Only ever store the Artifactory "Encrypted Password" in your enviroment
+	  https://www.jfrog.com/confluence/display/RTF/Centrally+Secure+Passwords
+	-->
+	<condition property="artifactory.password" value="${env.artifactory.password}">
+		<isset property="env.artifactory.password" />
+	</condition>
+</project>

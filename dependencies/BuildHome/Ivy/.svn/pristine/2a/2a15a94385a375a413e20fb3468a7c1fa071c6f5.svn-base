@@ -1,0 +1,162 @@
+<project xmlns:ivy="antlib:org.apache.ivy.ant" xmlns:if="ant:if" name="IvyRetrieve" >
+	<import file="ivyproperties.xml" />
+	<import file="antcontrib.xml" />
+
+
+
+	<!-- When a project retrieves its dependencies we want to symlink them whenever possible.  Includes files 
+         are the first candidate as they are mostly self-contained directories, and Windows can create Junctions
+         (directory symlinks) as a normaly user.
+     -->
+	<target name="symlink-includes" depends="check.symlinkable" unless="should.fallback.copy" >
+		<!-- <echoproperties prefix="dep" /> -->
+		<determine-unzip-dir />
+		<!-- <echo message="Processing ${dep.artefact}" /> -->
+
+
+		<exec executable="${ivy.lib.dir}\\bin\\symart.exe" failonerror="true">
+			<arg line="--artefact &quot;${dep.artifact}&quot; " />
+			<arg line="--source &quot;${dep.from}&quot; " />
+			<arg line="--cache &quot;${cache.unzip.destination}&quot; " />
+			<arg line="--link &quot;${dependency.dir}\${dep.type.real}&quot; " />
+		</exec>
+	</target>    
+
+
+	<target name="check.symlinkable" depends="AntContrib.import">
+		<propertyregex property="should.fallback.copy" input="${dep.module}" regexp=".*MSXML.*" replace="YES" casesensitive="false" />
+		<propertyregex property="should.fallback.copy" input="${dep.module}" regexp=".*ADO.*" replace="YES" casesensitive="false" />
+		<propertyregex property="should.fallback.copy" input="${dep.module}" regexp=".*CNG.*" replace="YES" casesensitive="false" />
+		<propertyregex property="should.fallback.copy" input="${dep.module}" regexp=".*pkcs.*" replace="YES" casesensitive="false" />
+		<propertyregex property="should.fallback.copy" input="${dep.module}" regexp=".*BioKey\.Vst.*" replace="YES" casesensitive="false" />
+		<propertyregex property="should.fallback.copy" input="${dep.module}" regexp=".*BioApi.*" replace="YES" casesensitive="false" />
+		<propertyregex property="should.fallback.copy" input="${dep.module}" regexp=".*NISTPack.*" replace="YES" casesensitive="false" />
+		<propertyregex property="should.fallback.copy" input="${dep.module}" regexp=".*ABLAPI.*" replace="YES" casesensitive="false" />
+		<propertyregex property="should.fallback.copy" input="${dep.module}" regexp=".*Entrust.*" replace="YES" casesensitive="false" />
+		<propertyregex property="should.fallback.copy" input="${dep.module}" regexp=".*Unicert.*" replace="YES" casesensitive="false" />
+		<propertyregex property="should.fallback.copy" input="${dep.module}" regexp=".*Verisign.*" replace="YES" casesensitive="false" />
+		<propertyregex property="should.fallback.copy" input="${dep.module}" regexp=".*TpmVscMgr.*" replace="YES" casesensitive="false" />
+		<propertyregex property="should.fallback.copy" input="${dep.module}" regexp=".*PSMProfile.*" replace="YES" casesensitive="false" />
+		<propertyregex property="should.fallback.copy" input="${dep.module}" regexp=".*Websentry.*" replace="YES" casesensitive="false" />
+		<propertyregex property="should.fallback.copy" input="${dep.module}" regexp=".*Libjpeg.*" replace="YES" casesensitive="false" />
+
+		<echo if:set="should.fallback.copy" >Dependency should not be symlinked, copying instead</echo>
+		<antcall target="unzip" if:set="should.fallback.copy" />
+	</target>
+
+
+	<macrodef name="determine-unzip-dir">
+		<sequential>
+			<condition property="dep.type.real" value="${dep.type}s" else="${dep.type}">
+				<or>
+					<equals arg1="${dep.type}" arg2="tool" />
+					<equals arg1="${dep.type}" arg2="script" />
+				</or>
+			</condition>
+
+			<property name="cache.unzip.destination" location="${ivy.unzip.cache}/${dep.organisation}/${dep.module}/${dep.revision}/${dep.type.real}/${dep.artifact}" />
+
+			<!-- <echo>Cache unzip: ${cache.unzip.destination}</echo> -->
+		</sequential>
+	</macrodef>
+
+
+
+
+
+	<!-- When a project retrieves its dependencies we want to symlink them whenever possible.  Lib files are
+         problematic as they generally use the same directory structure as other module's libs, so it is not
+         possible to simply symlink lib's directory root.  Furthermore, file symlinks require an elevated
+         console on Windows.  Therefore for now we simply copy the files, replicating the directory structure.
+     -->
+	<target name="symlink-module" >
+		<!-- <echo message="Processing ${dep.artefact}" /> -->
+		<determine-unzip-dir />
+
+
+		<exec executable="${ivy.lib.dir}\\bin\\symart.exe" failonerror="true">
+			<arg line="--artefact &quot;${dep.artifact}&quot; " />
+			<arg line="--source &quot;${dep.from}&quot; " />
+			<arg line="--cache &quot;${cache.unzip.destination}&quot; " />
+			<arg line="--link &quot;${dependency.dir}\${dep.type.real}&quot; " />
+			<arg line="--type Libs" />
+		</exec>
+
+	</target>
+
+
+
+
+
+	<property name="ivy.unzip.cache" location="/.ivy_unzip_cache" />
+
+
+
+
+
+
+
+
+
+
+
+
+	<target name="ssl" >
+		<property name="dep.from" value="C:\Users\ben.arnold\.ivy2\cache\3rdparty\OpenSSL\includes\OpenSSL-1.0.1j-intercede.0.zip" />
+		<property name="dep.module" value="OpenSSL" />
+		<property name="dep.organisation" value="3rdparty" />
+		<property name="dep.revision" value="1.0.1j-intercede.0" />
+		<property name="dep.size" value="378457" />
+		<property name="dep.to" value="C:\src\temp\IvySymlink\RequestFilterModule\.ivy\artifacts\3rdparty\OpenSSL\OpenSSL.zip" />
+		<property name="dep.type" value="include" />
+
+		<antcall target="symlink-includes" />
+	</target>
+
+	<target name="ssl-mod" >
+		<antcall target="ssl-mod32" />
+		<antcall target="ssl-mod64" />
+	</target>
+
+	<target name="ssl-mod32" depends="AntContrib.import">
+		<property name="dep.from" value="C:\Users\ben.arnold\.ivy2\cache\3rdparty\OpenSSL\libs\OpenSSLlib_win32-1.0.1j-intercede.0.zip" />
+		<property name="dep.module" value="OpenSSL" />
+		<property name="dep.artifact" value="OpenSSLlib_win32" />
+		<property name="dep.organisation" value="3rdparty" />
+		<property name="dep.revision" value="1.0.1j-intercede.0" />
+		<property name="dep.to" value="C:\src\temp\IvySymlink\RequestFilterModule\.ivy\artifacts\3rdparty\OpenSSL\OpenSSLlib_win32.zip" />
+		<property name="dep.type" value="lib" />
+
+		<antcall target="symlink-module" />
+	</target>
+
+	<target name="ssl-mod64" depends="AntContrib.import">
+		<property name="dep.from" value="C:\Users\ben.arnold\.ivy2\cache\3rdparty\OpenSSL\libs\OpenSSLlib_win64-1.0.1j-intercede.0.zip" />
+		<property name="dep.module" value="OpenSSL" />
+		<property name="dep.artifact" value="OpenSSLlib_win64" />
+		<property name="dep.organisation" value="3rdparty" />
+		<property name="dep.revision" value="1.0.1j-intercede.0" />
+		<property name="dep.to" value="C:\src\temp\IvySymlink\RequestFilterModule\.ivy\artifacts\3rdparty\OpenSSL\OpenSSLlib_win64.zip" />
+		<property name="dep.type" value="lib" />
+
+		<antcall target="symlink-module" />
+	</target>
+
+	<target name="ivy-symlink-cache-exists" >
+		<available property="ivy.unzip.cache.present" file="${ivy.unzip.cache}" />
+		<echo>${ivy.unzip.cache.present}</echo>
+	</target>
+
+	<target name="clean-ivy-symlink-cache" depends="ivy-symlink-cache-exists" if="ivy.unzip.cache.present" >
+		<pathconvert pathsep="${line.separator}">
+			<dirset dir="${ivy.unzip.cache}" includes="**/include" />
+		</pathconvert>
+
+		<change-permissions action="reset" >
+			<dirset dir="${ivy.unzip.cache}" includes="**/include" />
+		</change-permissions>
+
+		<delete dir="${ivy.unzip.cache}" verbose="true" />
+	</target>
+</project>
+

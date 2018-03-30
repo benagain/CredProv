@@ -1,0 +1,112 @@
+<project>
+	<import file="${ivy.lib.dir}/antcontrib.xml" />
+
+	<target name="analyse-cppcheck" depends="checkout-cppcheck, AntContrib.import" description="Run static analysis" >
+		<fail unless="analyse.dir" />
+
+		<!-- Defaults if not set -->
+		<if>
+			<isset property="cppcheck.threads"/>
+			<then>
+				<property name="cppcheck.threads.argLine" value="-j ${cppcheck.threads}"/>
+			</then>
+			<else>
+				<property name="cppcheck.threads.argLine" value="-j 10"/>
+			</else>
+		</if>
+		
+		<if>
+			<isset property="cppcheck.enableFlags"/>
+			<then>
+				<property name="cppcheck.enableFlags.argLine" value="--enable=${cppcheck.enableFlags}"/>
+			</then>
+			<else>
+				<property name="cppcheck.enableFlags.argLine" value=""/>
+			</else>
+		</if>
+		
+		<if>
+			<isset property="cppcheck.suppress"/>
+			<then>
+				<propertyregex property="csvReplacedSuppress" input="${cppcheck.suppress}" regexp="," replace=" --suppress="/>
+				<if>
+					<isset property="csvReplacedSuppress"/>
+					<then>
+						<property name="cppcheck.suppress.argLine" value="--suppress=${csvReplacedSuppress}"/>
+					</then>
+					<else>
+						<property name="cppcheck.suppress.argLine" value="--suppress=${cppcheck.suppress}"/>
+					</else>
+				</if>
+			</then>
+			<else>
+				<property name="cppcheck.suppress.argLine" value=""/>
+			</else>
+		</if>
+		
+		<if>
+			<isset property="cppcheck.ignoreTest"/>
+			<then>
+				<property name="cppcheck.ignoreTest.argLine" value='-i "${cppcheck.ignoreTest}"'/>
+			</then>
+			<else>
+				<property name="cppcheck.ignoreTest.argLine" value=""/>
+			</else>
+		</if>
+		
+		<if>
+			<isset property="cppcheck.ignore"/>
+			<then>
+				<propertyregex property="csvReplacedIgnore" input="${cppcheck.ignore}" regexp="," replace='" -i "'/>
+				<if>
+					<isset property="csvReplacedIgnore"/>
+					<then>
+						<property name="cppcheck.ignore.argLine" value='-i "${csvReplacedIgnore}"'/>
+					</then>
+					<else>
+						<property name="cppcheck.ignore.argLine" value='-i "${cppcheck.ignore}"'/>
+					</else>
+				</if>
+			</then>
+			<else>
+				<property name="cppcheck.ignore.argLine" value=""/>
+			</else>
+		</if>
+		
+		<property name="analyse.result" value="cppcheck-result-${ant.project.name}.xml" />
+		
+		<!-- Allow callers to specify their own preprocessor definitions for cppcheck to apply, these
+		should be provided as a space seperated list, optionally with an =value. An example;
+		"UNICODE _DEBUG _MSC_VER=1600" -->
+		<property name="analyse.preprocessor.definitions" value="MOBILE" />
+		<propertyregex property="cppcheck.preprocessor.definitions"
+				input="${analyse.preprocessor.definitions}"
+				regexp="[\w\\]+" replace="-D\0"
+				global="true" defaultValue="" />
+
+        <property name="executable.path" location="${dependency.tools.dir}/cppcheck/cppcheck.exe" />
+        
+		<exec executable="${executable.path}" error='${analyse.result}' failonerror="true">
+			<arg value='--enable=style' />
+			<arg line='${cppcheck.enableFlags.argLine}' />
+			<arg line='${cppcheck.threads.argLine}'/>
+			<arg value='--xml' />
+			<arg value='--xml-version=2' />
+			<arg value='--inline-suppr' />
+			<arg value='--suppress=*:VC1?/*' />
+			<arg value='--suppress=*:*/VC1?/*' />
+			<arg value='--suppress=noExplicitConstructor' />
+			<arg line='${cppcheck.suppress.argLine}'/>
+			<arg line='-i dependencies' />
+			<arg line='${cppcheck.ignoreTest.argLine}' />
+			<arg line='${cppcheck.ignore.argLine}' />
+			<arg value='${cppcheck.preprocessor.definitions}' />
+			<arg value='${analyse.dir}' />
+		</exec>
+		<echo message="Results written to ${analyse.result}" />
+	</target>
+	
+	<import file="checkout_tool.xml" />
+
+</project>
+

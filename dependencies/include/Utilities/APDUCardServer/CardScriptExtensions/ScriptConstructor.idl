@@ -1,0 +1,57 @@
+import "oaidl.idl";
+import "ocidl.idl";
+import "dispex.idl";
+
+[
+	object,
+	uuid(AF1693FC-559C-46e6-B273-2988F3992DF8),
+	dual,
+	nonextensible,
+	helpstring("IScriptConstructor Interface. Allows COM objects Invoked from Script to provide Constructor function"),
+	pointer_default(unique)
+]
+interface IScriptConstructor : IDispatch//IDispatchEx
+{
+	// pvarRes comes via the IDispatchEx.InvokeEx method
+	[id(1), helpstring("method Constructor")] HRESULT Constructor([in] DISPPARAMS* pdp);
+};
+
+[
+	object, 
+	uuid(3885D852-93FE-4715-863D-3FB6C6C348F1),
+	dual,
+	nonextensible,
+	helpstring("IScriptArray Interface. Allows control of Script associative array for a COM object"),
+	pointer_default(unique)
+]
+interface IScriptArray : IDispatch
+{
+	// pvarRes comes via the IDispatchEx.InvokeEx method
+	[id(1), helpstring("method SetEntry")] HRESULT SetEntry([in] BSTR bstrPropertyName, [in] VARIANT vEntry);
+};
+
+/** XML format for ISerialiseXML is
+\verbatim
+<NameOfVariable Type="ISerialiseXML" ProgID="">
+	<ObjectSpecificNode ObjSpecificAttributes="">the object creates custom node to represent its data</ObjectSpecificNode>
+</NameOfVariable>
+\endverbatim
+NameOfVariable is passed in to functions.
+The SaveToXML must set the ProgID attribute (to allow the object to be loaded at a later point)
+*/
+[
+	object, 
+	uuid(61FE2942-7997-4ebc-8440-39A2DDF2C3B1),
+	dual,
+	nonextensible,
+	helpstring("ISerialiseXML Interface. Allows objects to serialise themselves to XML, and constuct themselves from XML"),
+	pointer_default(unique)
+]
+interface ISerialiseXML : IDispatch
+{
+	/// given an IMSXMLDOMNode, save the content of this object under that node
+	[id(1), helpstring("method SaveToXML")] HRESULT SaveToXML([in] IDispatch *pNodeToSerialiseUnder);
+
+	/// given an IMSXMLDOMNode, initialise this object to contain the data specified under that node
+	[id(2), helpstring("method LoadFromXML")] HRESULT LoadFromXML([in] IDispatch *pNodeContainingSerialisedData);
+};

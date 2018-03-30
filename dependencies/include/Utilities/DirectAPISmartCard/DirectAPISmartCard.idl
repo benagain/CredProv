@@ -1,0 +1,31 @@
+import "oaidl.idl";
+import "ocidl.idl";
+
+[
+	object,
+	uuid(0075D009-D1BB-4E14-9C1C-11CF0783753C),
+	dual,
+	nonextensible,
+	pointer_default(unique)
+]
+interface IDirectAPISmartCard : IDispatch{
+
+	[id(1), helpstring("Updates the client unlock key of a Windows 7 VSC")] HRESULT UpdateClientUnlockKey([in] BSTR xmlIn);
+};
+[
+	uuid(9AA8E253-332E-431B-BB0F-CE4B0CA1CE83),
+	version(1.0),
+]
+library DirectAPISmartCardLib
+{
+	importlib("stdole2.tlb");
+	[
+		uuid(6BCECBD1-A108-4ED7-AAE4-A957591A9CFF)
+	]
+	coclass DirectAPISmartCard
+	{
+		[default] interface IDirectAPISmartCard;
+	};
+};
+
+import "shobjidl.idl";

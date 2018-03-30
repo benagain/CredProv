@@ -1,0 +1,82 @@
+<project>
+
+  <property name="dependency.dir" value="dependencies" />
+  <property name="dependency.tools.dir" value="${dependency.dir}/tools" />
+  <property name="svn.repo.root" value="https://svn/svn/MyID_Development" />
+
+  <!-- 
+        commonly used tools... 
+  -->
+
+  <available property="doxygen.exists" file="${dependency.tools.dir}/Doxygen" />
+  <target name="checkout-doxygen" unless="doxygen.exists"><antcall target="checkout-tool"><param name="tool.dir" value="Doxygen/Bin"/></antcall></target>
+
+  <available property="cppcheck.exists" file="${dependency.tools.dir}/cppcheck" />
+  <target name="checkout-cppcheck" unless="cppcheck.exists"><antcall target="checkout-tool"><param name="tool.dir" value="cppcheck" /></antcall></target>
+
+  <available property="opencover.exists" file="${dependency.tools.dir}/ReportGenerator" />
+  <target name="checkout-opencover" unless="opencover.exists"><antcall target="checkout-tool-trunk"><param name="tool.dir" value="OpenCover" /></antcall></target>
+
+  <available property="opencover-report-generator.exists" file="${dependency.tools.dir}/ReportGenerator" />
+  <target name="checkout-opencover-report-generator" unless="opencover-report-generator.exists"><antcall target="checkout-tool-trunk"><param name="tool.dir" value="ReportGenerator" /></antcall></target>
+
+  <available property="opencovertocobertura.exists" file="${dependency.tools.dir}/OpenCoverToCoberturaConverter" />
+  <target name="checkout-opencovertocobertura" unless="opencovertocobertura.exists"><antcall target="checkout-tool"><param name="tool.dir" value="OpenCoverToCoberturaConverter" /></antcall></target>
+
+  <available property="opencppcoverage.exists" file="${dependency.tools.dir}/opencppcoverage" />
+  <target name="checkout-opencppcoverage" unless="opencppcoverage.exists"><antcall target="checkout-tool"><param name="tool.dir" value="opencppcoverage" /></antcall></target>
+  
+  <available property="findbugs.exists" file="${dependency.tools.dir}/findbugs" />
+  <target name="checkout-findbugs" unless="findbugs.exists"><antcall target="checkout-tool"><param name="tool.dir" value="findbugs" /></antcall></target>
+
+  <!--
+    tools without branch/tag/trunk structure :
+
+    <antcall target="checkout-tool">
+      <param name="tool.dir" value="OpenCover"/>
+    </antcall>
+
+
+
+    tools to be taken from trunk inside their directory :
+
+    <antcall target="checkout-tool-trunk">
+      <param name="tool.dir" value="OpenCover"/>
+    </antcall>
+
+
+
+    tools from a branch inside their directory :
+
+    <antcall target="checkout-tool">
+      <param name="tool.dir" value="OpenCover"/>
+      <param name="tool.dir.branch" value="trunk"/>  or value="branches/v1.2"
+    </antcall>
+  -->
+  <target name="checkout-tool-trunk">
+    <antcall target="checkout-tool">
+      <param name="tool.dir.branch" value="trunk" />
+    </antcall>
+  </target>
+
+
+  <target name="checkout-tool">
+    <condition property="checkout.url" value="3rdParty/Tools/${tool.dir}/${tool.dir.branch}" else="3rdParty/Tools/${tool.dir}">
+      <isset property="tool.dir.branch" />
+    </condition>
+
+    <antcall target="checkout" >
+      <param name="checkout.destination" value="${dependency.tools.dir}/${tool.dir}" />
+    </antcall>
+  </target>
+
+
+ <target name="checkout">
+       <exec executable="svn" failonerror="true">
+         <arg value="co"/>
+        <arg value="${svn.repo.root}/${checkout.url}" />
+        <arg value="${checkout.destination}" />
+      </exec>
+ </target>
+
+</project>
