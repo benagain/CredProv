@@ -1,0 +1,33 @@
+// MyIDVscCfg.idl : IDL source for MyIDVscCfg
+// Copyright © Intercede Group Plc 2016
+
+import "unknwn.idl";
+
+[
+	local,
+	object,
+	oleautomation,
+	pointer_default(unique),
+	uuid(1DD455C0-CC93-4BAB-854F-59A6A0146BC0)
+]
+interface IVscCfg : IUnknown
+{
+	[id(1)] HRESULT Create([in] BSTR card, [in] BSTR name, [in] BSTR csp, [out] LONG* error, [out] VARIANT_BOOL* reboot, [out] BSTR* instanceId);
+	[id(2)] HRESULT Remove([in] BSTR instanceId, [out] LONG* error, [out] VARIANT_BOOL* reboot);
+	[id(3)] HRESULT Policy([in] BSTR reader, [in] LONG minLength, [in] LONG maxLength, [in] BSTR allowed, [out] LONG* error);
+};
+[
+	uuid(559191EA-31DD-4754-A6EC-D284C2CA5ACA),
+	version(1.0),
+]
+library MyIDVscCfgLib
+{
+	[
+		uuid(8745ED1F-F598-4610-81A9-758C5C58B087)
+	]
+	coclass VscCfg
+	{
+		[default] interface IVscCfg;
+	};
+};
+

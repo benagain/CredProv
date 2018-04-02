@@ -142,12 +142,12 @@ void LogEvent(_In_ int id, _In_ const myid::StringList& messages, _In_z_ const w
 		}
 
 		WORD type;
-		switch ((id >> 30) & 0x3)
+		//switch ((id >> 30) & 0x3)
 		{
 		//case STATUS_SEVERITY_SUCCESS:
-		default:
+		//default:
 			type = EVENTLOG_SUCCESS;
-			break;
+			//break;
 		//case STATUS_SEVERITY_INFORMATIONAL:
 		//	type = EVENTLOG_INFORMATION_TYPE;
 		//	break;

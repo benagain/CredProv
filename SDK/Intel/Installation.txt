@@ -1,0 +1,22 @@
+Installation of Intel MyID Vsc components:
+
+Install:
+	regsvr32 /s IPTCredentialProvider.dll
+
+	MyIDVscService -service
+
+	MyIDVscInstall install
+
+Upgrading:
+	MyIDVscInstall install
+	MyIDVscInstall upgrade
+
+Uninstall
+	regsvr32 /s /u IPTCredentialProvider.dll
+
+	sc delete MyIDVscService
+
+	Delete all readers
+
+	reboot
+	MyIDVscInstall clesn
